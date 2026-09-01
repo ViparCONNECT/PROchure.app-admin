@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Box, Button, Card, CardContent, Chip, CircularProgress, FormControlLabel, Switch, Typography } from '@mui/material';
+import { Box, Button, Card, CardContent, CircularProgress, Typography } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { FormProvider, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -15,7 +15,6 @@ import type { Profile } from '@/api/types';
 
 function profileToFormValues(profile: Profile): ProfileFormValues {
   return {
-    isDisabled: profile.isDisabled,
     image: profile.image ?? '',
     logo: profile.logo ?? '',
     categoryId: profile.categoryId ?? profile.category?.id ?? '',
@@ -32,12 +31,12 @@ function profileToFormValues(profile: Profile): ProfileFormValues {
       cityTown: profile.address.cityTown,
       stateProvince: profile.address.stateProvince,
       country: profile.address.country,
-      pinCodeZipCode: profile.address.pinCodeZipCode,
+      pinCodeZipCode: profile.address.pinCodeZipCode ?? '',
     },
     contact: {
       countryCode: profile.contact.countryCode ?? '',
-      officialContactNumber: profile.contact.officialContactNumber,
-      officialEmailId: profile.contact.officialEmailId,
+      officialContactNumber: profile.contact.officialContactNumber ?? '',
+      officialEmailId: profile.contact.officialEmailId ?? '',
       officialWebsiteApp: profile.contact.officialWebsiteApp ?? '',
       contactPersonName: profile.contact.contactPersonName ?? '',
       contactPersonDesignation: profile.contact.contactPersonDesignation ?? '',
@@ -72,12 +71,9 @@ export function ProfileEditPage() {
     handleSubmit,
     reset,
     watch,
-    setValue,
     formState: { isDirty, isSubmitting },
     setError,
   } = methods;
-
-  const isDisabled = watch('isDisabled');
 
   useEffect(() => {
     if (profile) {
@@ -128,25 +124,9 @@ export function ProfileEditPage() {
       </Button>
 
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Typography variant="h5" fontWeight={700}>
-            Edit Profile — {profile?.name}
-          </Typography>
-          {isDisabled && (
-            <Chip label="Disabled" color="default" size="small" />
-          )}
-        </Box>
-        <FormControlLabel
-          control={
-            <Switch
-              checked={isDisabled ?? false}
-              onChange={(e) => setValue('isDisabled', e.target.checked, { shouldDirty: true })}
-              color="error"
-            />
-          }
-          label="Disabled"
-          labelPlacement="start"
-        />
+        <Typography variant="h5" fontWeight={700}>
+          Edit Profile — {profile?.name}
+        </Typography>
       </Box>
 
       <Card>

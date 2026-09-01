@@ -16,13 +16,13 @@ const addressSchema = z.object({
   cityTown: z.string().min(1, 'City/Town is required').max(100),
   stateProvince: z.string().min(1, 'State/Province is required').max(100),
   country: z.string().min(1, 'Country is required').max(100),
-  pinCodeZipCode: z.string().min(1, 'PIN/ZIP code is required').max(20),
+  pinCodeZipCode: z.string().max(20).optional().or(z.literal('')),
 });
 
 const contactSchema = z.object({
   countryCode: z.string().max(10).optional().or(z.literal('')),
-  officialContactNumber: z.string().min(1, 'Contact number is required').max(20),
-  officialEmailId: z.string().email('Enter a valid email').max(254),
+  officialContactNumber: z.string().max(20).optional().or(z.literal('')),
+  officialEmailId: z.string().email('Enter a valid email').max(254).optional().or(z.literal('')),
   officialWebsiteApp: optionalUrl,
   contactPersonName: z.string().max(100).optional().or(z.literal('')),
   contactPersonDesignation: z.string().max(100).optional().or(z.literal('')),
@@ -40,15 +40,15 @@ const workingHoursSchema = z.object({
 });
 
 export const profileSchema = z.object({
-  isDisabled: z.boolean().default(false),
-  image: optionalUrl,
+  isDisabled: z.boolean().default(false).optional(),
+  image: z.string().min(1, 'Profile Image is required'),
   logo: optionalUrl,
   categoryId: z.string().min(1, 'Category is required'),
-  subCategoryId: z.string().optional().or(z.literal('')),
+  subCategoryId: z.string().min(1, 'Profile Type is required'),
   name: z.string().min(1, 'Name is required').max(200),
   yearOfEstablishment: z.string().max(4).optional().or(z.literal('')),
   address: addressSchema,
-  contact: contactSchema,
+  contact: contactSchema.optional(),
   workingHours: workingHoursSchema.optional(),
 });
 

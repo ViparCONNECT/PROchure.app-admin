@@ -25,6 +25,7 @@ import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { Controller, useFormContext } from 'react-hook-form';
 import dayjs from 'dayjs';
 import type { FormFieldDefinition } from '@/api/types';
+import { ImageUploadField } from './ImageUploadField';
 
 interface FormRendererProps {
   fields: FormFieldDefinition[];
@@ -248,6 +249,20 @@ function FieldRenderer({ field, mode, errors, control, dynamicOptions }: FieldRe
           )}
         />
       </LocalizationProvider>
+    );
+  }
+
+  // Image upload
+  if (field.type === 'imageUpload') {
+    return (
+      <ImageUploadField
+        name={field.name}
+        label={field.label}
+        required={field.required}
+        helpText={field.helpText}
+        uploadFolder={field.uploadFolder}
+        disabled={isReadOnly}
+      />
     );
   }
 

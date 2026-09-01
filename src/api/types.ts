@@ -240,7 +240,8 @@ export type FieldType =
   | 'select'
   | 'multiSelect'
   | 'radio'
-  | 'section';
+  | 'section'
+  | 'imageUpload';
 
 export interface SelectOption {
   label: string;
@@ -265,4 +266,6 @@ export interface FormFieldDefinition {
   readOnly?: boolean;
   helpText?: string;
   fields?: FormFieldDefinition[];
+  /** S3 folder for imageUpload fields (e.g. 'profiles') */
+  uploadFolder?: string;
 }
