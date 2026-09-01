@@ -1,180 +1,252 @@
-import { useRef, useState } from 'react';
-import { Controller, useFormContext } from 'react-hook-form';
-import {
-  Box,
-  Button,
-  CircularProgress,
-  FormHelperText,
-  IconButton,
-  Typography,
-} from '@mui/material';
-import UploadFileIcon from '@mui/icons-material/UploadFile';
-import ClearIcon from '@mui/icons-material/Clear';
-import { uploadImage } from '@/api/upload';
+import type { FormFieldDefinition } from '@/api/types';
 
-const ACCEPTED_TYPES = 'image/jpeg,image/png,image/webp,image/gif';
-const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
+export const ADMIN_CREATE_FIELDS: FormFieldDefinition[] = [
+  {
+    name: 'firstName',
+    label: 'First Name',
+    type: 'text',
+    required: false,
+    maxLength: 100,
+    create: true,
+    edit: true,
+  },
+  {
+    name: 'lastName',
+    label: 'Last Name',
+    type: 'text',
+    required: false,
+    maxLength: 100,
+    create: true,
+    edit: true,
+  },
+  {
+    name: 'email',
+    label: 'Email Address',
+    type: 'email',
+    required: true,
+    maxLength: 254,
+    create: true,
+    edit: false, // email cannot be changed after creation per API spec
+  },
+  {
+    name: 'password',
+    label: 'Password',
+    type: 'password',
+    required: true,
+    minLength: 8,
+    maxLength: 128,
+    helpText: 'Minimum 8 characters',
+    create: true,
+    edit: false,
+  },
+  {
+    name: 'role',
+    label: 'Role',
+    type: 'select',
+    required: true,
+    options: [
+      { label: 'Admin', value: 'ADMIN' },
+      { label: 'Super Admin', value: 'SUPER_ADMIN' },
+    ],
+    create: true,
+    edit: true,
+  },
+];
 
-interface ImageUploadFieldProps {
-  name: string;
-  label: string;
-  required?: boolean;
-  helpText?: string;
-  uploadFolder?: string;
-  disabled?: boolean;
-}
+export const ADMIN_EDIT_FIELDS: FormFieldDefinition[] = [
+  {
+    name: 'firstName',
+    label: 'First Name',
+    type: 'text',
+    required: false,
+    maxLength: 100,
+    create: true,
+    edit: true,
+  },
+  {
+    name: 'lastName',
+    label: 'Last Name',
+    type: 'text',
+    required: false,
+    maxLength: 100,
+    create: true,
+    edit: true,
+  },
+  {
+    name: 'role',
+    label: 'Role',
+    type: 'select',
+    required: false,
+    options: [
+      { label: 'Admin', value: 'ADMIN' },
+      { label: 'Super Admin', value: 'SUPER_ADMIN' },
+    ],
+    create: true,
+    edit: true,
+  },
+  {
+    name: 'isActive',
+    label: 'Active',
+    type: 'boolean',
+    create: false,
+    edit: true,
+    helpText: 'Deactivated admins cannot log in',
+  },
+];
 
-export function ImageUploadField({
-  name,
-  label,
-  required,
-  helpText,
-  uploadFolder = 'profiles',
-  disabled,
-}: ImageUploadFieldProps) {
-  const { control } = useFormContext();
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [uploading, setUploading] = useState(false);
-  const [localPreview, setLocalPreview] = useState<string | null>(null);
-  const [uploadError, setUploadError] = useState<string | null>(null);
+export const CATEGORY_EDIT_FIELDS: FormFieldDefinition[] = [
+  {
+    name: 'name',
+    label: 'Display Name',
+    type: 'text',
+    required: false,
+    maxLength: 100,
+    create: true,
+    edit: true,
+  },
+  {
+    name: 'isSubCategoryNeeded',
+    label: 'Requires Sub-Category',
+    type: 'boolean',
+    create: true,
+    edit: true,
+    helpText: 'When enabled, profiles in this category must have a sub-category',
+  },
+];
 
-  return (
-    <Controller
-      name={name}
-      control={control}
-      render={({ field, fieldState }) => {
-        const currentUrl = field.value as string | undefined;
-        const previewSrc = localPreview ?? currentUrl ?? '';
+export const SUBCATEGORY_FIELDS: FormFieldDefinition[] = [
+  {
+    name: 'name',
+    label: 'Sub-Category Name',
+    type: 'text',
+    required: true,
+    minLength: 1,
+    maxLength: 100,
+    create: true,
+    edit: true,
+  },
+];
 
-        async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-          const file = e.target.files?.[0];
-          if (!file) return;
+export const LANGUAGES_OPTIONS = [
+  'English', 'Hindi', 'Bengali', 'Telugu', 'Marathi', 'Tamil', 'Urdu',
+  'Gujarati', 'Kannada', 'Malayalam', 'Punjabi', 'Odia', 'Assamese',
+  'Maithili', 'Sanskrit', 'Nepali', 'Konkani', 'Sindhi',
+].map((l) => ({ label: l, value: l }));
 
-          if (file.size > MAX_SIZE_BYTES) {
-            setUploadError('File must be under 5 MB.');
-            return;
-          }
+const WORKING_HOURS_PLACEHOLDER = 'e.g. 09:00 AM to 01:00 PM | Lunch Break | 02:00 PM to 07:00 PM';
 
-          const blob = URL.createObjectURL(file);
-          setLocalPreview(blob);
-          setUploading(true);
-          setUploadError(null);
+export const PROFILE_FIELDS: FormFieldDefinition[] = [
+  {
+    name: 'categoryId',
+    label: 'Category',
+    type: 'select',
+    required: true,
+    source: 'categories',
+    create: true,
+    edit: true,
+  },
+  {
+    name: 'subCategoryId',
+    label: 'Sub-Category',
+    type: 'select',
+    source: 'subcategories',
+    create: true,
+    edit: true,
+    helpText: 'Required when the selected category uses sub-categories',
+  },
+  {
+    name: 'name',
+    label: 'Business Name',
+    type: 'text',
+    required: true,
+    minLength: 1,
+    maxLength: 200,
+    create: true,
+    edit: true,
+  },
+  {
+    name: 'yearOfEstablishment',
+    label: 'Year of Establishment',
+    type: 'text',
+    required: false,
+    maxLength: 4,
+    create: true,
+    edit: true,
+  },
+  {
+    name: 'image',
+    label: 'Profile Image',
+    type: 'imageUpload',
+    required: false,
+    uploadFolder: 'profiles',
+    create: true,
+    edit: true,
+  },
+  {
+    name: 'logo',
+    label: 'Logo',
+    type: 'imageUpload',
+    required: false,
+    uploadFolder: 'profiles',
+    create: true,
+    edit: true,
+  },
 
-          try {
-            const fileUrl = await uploadImage(file, uploadFolder);
-            field.onChange(fileUrl);
-            setLocalPreview(null);
-          } catch {
-            setUploadError('Upload failed. Please try again.');
-            setLocalPreview(null);
-          } finally {
-            setUploading(false);
-            URL.revokeObjectURL(blob);
-            // reset so same file can be re-selected after an error
-            if (inputRef.current) inputRef.current.value = '';
-          }
-        }
+  // ─── Address section ─────────────────────────────────────────────────────────
+  {
+    name: 'address',
+    label: 'Address',
+    type: 'section',
+    fields: [
+      { name: 'address.buildingMallPropertyName', label: 'Building / Mall / Property Name', type: 'text', maxLength: 200, create: true, edit: true },
+      { name: 'address.doorShopNo', label: 'Door / Shop No.', type: 'text', maxLength: 50, create: true, edit: true },
+      { name: 'address.floor', label: 'Floor', type: 'text', maxLength: 50, create: true, edit: true },
+      { name: 'address.streetLaneRoadNameSubLocality', label: 'Street / Lane / Road / Sub-Locality', type: 'text', maxLength: 200, create: true, edit: true },
+      { name: 'address.nearestLandmark', label: 'Nearest Landmark', type: 'text', maxLength: 200, create: true, edit: true },
+      { name: 'address.secondaryPrimaryLocality', label: 'Secondary / Primary Locality', type: 'text', maxLength: 200, create: true, edit: true },
+      { name: 'address.cityTown', label: 'City / Town', type: 'text', required: true, maxLength: 100, create: true, edit: true },
+      { name: 'address.stateProvince', label: 'State / Province', type: 'text', required: true, maxLength: 100, create: true, edit: true },
+      { name: 'address.country', label: 'Country', type: 'text', required: true, maxLength: 100, create: true, edit: true },
+      { name: 'address.pinCodeZipCode', label: 'PIN / ZIP Code', type: 'text', required: true, maxLength: 20, create: true, edit: true },
+    ],
+  },
 
-        function handleRemove() {
-          field.onChange('');
-          setLocalPreview(null);
-          setUploadError(null);
-        }
+  // ─── Contact section ─────────────────────────────────────────────────────────
+  {
+    name: 'contact',
+    label: 'Contact',
+    type: 'section',
+    fields: [
+      { name: 'contact.countryCode', label: 'Country Code', type: 'text', maxLength: 10, create: true, edit: true, helpText: 'e.g. +91' },
+      { name: 'contact.officialContactNumber', label: 'Official Contact Number', type: 'text', required: true, maxLength: 20, create: true, edit: true },
+      { name: 'contact.officialEmailId', label: 'Official Email', type: 'email', required: true, maxLength: 254, create: true, edit: true },
+      { name: 'contact.officialWebsiteApp', label: 'Website / App URL', type: 'text', create: true, edit: true, helpText: 'https://...' },
+      { name: 'contact.contactPersonName', label: 'Contact Person Name', type: 'text', maxLength: 100, create: true, edit: true },
+      { name: 'contact.contactPersonDesignation', label: 'Contact Person Designation', type: 'text', maxLength: 100, create: true, edit: true },
+      {
+        name: 'contact.mostComfortablePreferredLanguages',
+        label: 'Preferred Languages',
+        type: 'multiSelect',
+        options: LANGUAGES_OPTIONS,
+        create: true,
+        edit: true,
+      },
+    ],
+  },
 
-        const errorMessage = uploadError ?? fieldState.error?.message;
-
-        return (
-          <Box>
-            <Typography variant="body2" color="text.secondary" gutterBottom>
-              {label}
-              {required && (
-                <Typography component="span" color="error" sx={{ ml: 0.25 }}>
-                  *
-                </Typography>
-              )}
-            </Typography>
-
-            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-              {/* Preview thumbnail */}
-              {previewSrc && (
-                <Box sx={{ position: 'relative', flexShrink: 0 }}>
-                  <Box
-                    component="img"
-                    src={previewSrc}
-                    alt={label}
-                    sx={{
-                      width: 80,
-                      height: 80,
-                      objectFit: 'cover',
-                      borderRadius: 1,
-                      border: '1px solid',
-                      borderColor: 'divider',
-                      opacity: uploading ? 0.5 : 1,
-                      display: 'block',
-                    }}
-                  />
-                  {uploading && (
-                    <CircularProgress
-                      size={24}
-                      sx={{ position: 'absolute', top: '50%', left: '50%', mt: '-12px', ml: '-12px' }}
-                    />
-                  )}
-                  {!uploading && (
-                    <IconButton
-                      size="small"
-                      aria-label={`Remove ${label}`}
-                      onClick={handleRemove}
-                      disabled={disabled}
-                      sx={{
-                        position: 'absolute',
-                        top: -8,
-                        right: -8,
-                        bgcolor: 'background.paper',
-                        border: '1px solid',
-                        borderColor: 'divider',
-                        p: 0.25,
-                        '&:hover': { bgcolor: 'error.light', color: 'error.contrastText' },
-                      }}
-                    >
-                      <ClearIcon fontSize="small" />
-                    </IconButton>
-                  )}
-                </Box>
-              )}
-
-              {/* Upload button */}
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                <input
-                  ref={inputRef}
-                  type="file"
-                  accept={ACCEPTED_TYPES}
-                  style={{ display: 'none' }}
-                  onChange={handleFileChange}
-                  aria-label={`Upload ${label}`}
-                />
-                <Button
-                  variant="outlined"
-                  size="small"
-                  startIcon={uploading ? <CircularProgress size={14} color="inherit" /> : <UploadFileIcon />}
-                  onClick={() => inputRef.current?.click()}
-                  disabled={uploading || disabled}
-                >
-                  {uploading ? 'Uploading…' : previewSrc ? 'Change' : 'Upload Image'}
-                </Button>
-                <Typography variant="caption" color="text.secondary">
-                  JPEG, PNG, WebP · max 5 MB
-                </Typography>
-              </Box>
-            </Box>
-
-            {(errorMessage || helpText) && (
-              <FormHelperText error={!!errorMessage} sx={{ mt: 0.5 }}>
-                {errorMessage ?? helpText}
-              </FormHelperText>
-            )}
-          </Box>
-        );
-      }}
-    />
-  );
-}
+  // ─── Working hours section (replaced by WorkingHoursSection component) ────────
+  {
+    name: 'workingHours',
+    label: 'Working Hours',
+    type: 'section',
+    fields: [
+      { name: 'workingHours.monday', label: 'Monday', type: 'text', maxLength: 200, create: true, edit: true },
+      { name: 'workingHours.tuesday', label: 'Tuesday', type: 'text', maxLength: 200, create: true, edit: true },
+      { name: 'workingHours.wednesday', label: 'Wednesday', type: 'text', maxLength: 200, create: true, edit: true },
+      { name: 'workingHours.thursday', label: 'Thursday', type: 'text', maxLength: 200, create: true, edit: true },
+      { name: 'workingHours.friday', label: 'Friday', type: 'text', maxLength: 200, create: true, edit: true },
+      { name: 'workingHours.saturday', label: 'Saturday', type: 'text', maxLength: 200, create: true, edit: true },
+      { name: 'workingHours.sunday', label: 'Sunday', type: 'text', maxLength: 200, create: true, edit: true },
+    ],
+  },
+];
