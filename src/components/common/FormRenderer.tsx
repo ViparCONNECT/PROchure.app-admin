@@ -25,7 +25,7 @@ import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { Controller, useFormContext } from 'react-hook-form';
 import dayjs from 'dayjs';
 import type { FormFieldDefinition } from '@/api/types';
-import { ImageUploadField } from './ImageUploadField';
+import { ImageUploadField } from './';
 
 interface FormRendererProps {
   fields: FormFieldDefinition[];
