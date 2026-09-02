@@ -17,7 +17,11 @@ const DEFAULT_VALUES: ProfileFormValues = {
   categoryId: '',
   subCategoryId: '',
   name: '',
+  professionalTitle: '',
+  qualifications: '',
   yearOfEstablishment: '',
+  specializations: '',
+  services: '',
   address: {
     buildingMallPropertyName: '',
     doorShopNo: '',
@@ -74,9 +78,13 @@ export function ProfileCreatePage() {
     // strip empty-string optionals before sending
     const dto = {
       ...values,
+      professionalTitle: values.professionalTitle || undefined,
+      qualifications: values.qualifications || undefined,
       image: values.image || undefined,
       logo: values.logo || undefined,
       subCategoryId: values.subCategoryId || undefined,
+      specializations: values.specializations || undefined,
+      services: values.services || undefined,
       address: { ...values.address, pinCodeZipCode: values.address.pinCodeZipCode ?? '' },
       contact: {
         countryCode: values.contact?.countryCode ?? '',

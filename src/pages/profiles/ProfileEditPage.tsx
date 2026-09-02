@@ -20,7 +20,11 @@ function profileToFormValues(profile: Profile): ProfileFormValues {
     categoryId: profile.categoryId ?? profile.category?.id ?? '',
     subCategoryId: profile.subCategoryId ?? profile.sub_category?.id ?? '',
     name: profile.name,
+    professionalTitle: profile.professionalTitle ?? '',
+    qualifications: profile.qualifications ?? '',
     yearOfEstablishment: profile.yearOfEstablishment ?? '',
+    specializations: profile.specializations ?? '',
+    services: profile.services ?? '',
     address: {
       buildingMallPropertyName: profile.address.buildingMallPropertyName ?? '',
       doorShopNo: profile.address.doorShopNo ?? '',
@@ -83,9 +87,13 @@ export function ProfileEditPage() {
   const onSubmit = async (values: ProfileFormValues) => {
     const dto = {
       ...values,
+      professionalTitle: values.professionalTitle || undefined,
+      qualifications: values.qualifications || undefined,
       image: values.image || undefined,
       logo: values.logo || undefined,
       subCategoryId: values.subCategoryId || undefined,
+      specializations: values.specializations || undefined,
+      services: values.services || undefined,
       address: { ...values.address, pinCodeZipCode: values.address.pinCodeZipCode ?? '' },
       contact: values.contact
         ? {

@@ -126,6 +126,10 @@ export interface Profile {
   sub_category?: Pick<SubCategory, 'id' | 'name'>;
   name: string;
   yearOfEstablishment?: string;
+  professionalTitle?: string;
+  qualifications?: string;
+  specializations?: string;
+  services?: string;
   address: ProfileAddress;
   contact: ProfileContact;
   workingHours?: WorkingHours;
@@ -141,6 +145,10 @@ export interface CreateProfileDto {
   subCategoryId?: string;
   name: string;
   yearOfEstablishment?: string;
+  professionalTitle?: string;
+  qualifications?: string;
+  specializations?: string;
+  services?: string;
   address: ProfileAddress;
   contact: ProfileContact;
   workingHours?: WorkingHours;
