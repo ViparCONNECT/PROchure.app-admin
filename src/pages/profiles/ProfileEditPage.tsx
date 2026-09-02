@@ -70,7 +70,6 @@ export function ProfileEditPage() {
   const {
     handleSubmit,
     reset,
-    watch,
     formState: { isDirty, isSubmitting },
     setError,
   } = methods;
@@ -87,6 +86,7 @@ export function ProfileEditPage() {
       image: values.image || undefined,
       logo: values.logo || undefined,
       subCategoryId: values.subCategoryId || undefined,
+      address: { ...values.address, pinCodeZipCode: values.address.pinCodeZipCode ?? '' },
     };
 
     try {

@@ -178,7 +178,7 @@ function FieldRenderer({ field, mode, errors, control, dynamicOptions }: FieldRe
             disabled={isReadOnly}
             renderTags={(val, getTagProps) =>
               val.map((opt, idx) => (
-                <Chip key={String(opt.value)} label={opt.label} size="small" {...getTagProps({ index: idx })} />
+                <Chip label={opt.label} size="small" {...getTagProps({ index: idx })} />
               ))
             }
             renderInput={(params) => (

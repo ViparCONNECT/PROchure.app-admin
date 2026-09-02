@@ -11,7 +11,6 @@ import { UnsavedChangesGuard } from '@/components/common/UnsavedChangesGuard';
 import { parseApiError } from '@/utils/api-error';
 
 const DEFAULT_VALUES: ProfileFormValues = {
-  is_disabled: false,
   isDisabled: false,
   image: '',
   logo: '',
@@ -78,6 +77,7 @@ export function ProfileCreatePage() {
       image: values.image || undefined,
       logo: values.logo || undefined,
       subCategoryId: values.subCategoryId || undefined,
+      address: { ...values.address, pinCodeZipCode: values.address.pinCodeZipCode ?? '' },
     };
 
     try {

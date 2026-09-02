@@ -133,7 +133,7 @@ export const LANGUAGES_OPTIONS = [
   'Maithili', 'Sanskrit', 'Nepali', 'Konkani', 'Sindhi',
 ].map((l) => ({ label: l, value: l }));
 
-const WORKING_HOURS_PLACEHOLDER = 'e.g. 09:00 AM to 01:00 PM | Lunch Break | 02:00 PM to 07:00 PM';
+// placeholder removed (unused) to satisfy TypeScript
 
 export const PROFILE_FIELDS: FormFieldDefinition[] = [
   {

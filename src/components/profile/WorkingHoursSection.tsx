@@ -40,15 +40,6 @@ interface DayState {
 
 // ─── Defaults ─────────────────────────────────────────────────────────────────
 
-const DEFAULT_OPEN: DayState = {
-  closed: false,
-  morningStart: dayjs().hour(9).minute(0).second(0),
-  morningEnd: dayjs().hour(13).minute(0).second(0),
-  hasLunch: true,
-  afternoonStart: dayjs().hour(14).minute(0).second(0),
-  afternoonEnd: dayjs().hour(19).minute(0).second(0),
-};
-
 // ─── String ↔ State ───────────────────────────────────────────────────────────
 
 function parseTimeStr(s: string): Dayjs | null {

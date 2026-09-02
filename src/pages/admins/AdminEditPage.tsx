@@ -81,7 +81,7 @@ export function AdminEditPage() {
       </Button>
 
       <Typography variant="h5" fontWeight={700} sx={{ mb: 3 }}>
-        Edit Admin — {admin?.displayName || admin?.email}
+        Edit Admin — {admin ? ((admin.firstName || admin.lastName) ? `${admin.firstName ?? ''} ${admin.lastName ?? ''}`.trim() : admin.email) : ''}
       </Typography>
 
       <Card>
