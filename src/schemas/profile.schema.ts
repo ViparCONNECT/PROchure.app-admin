@@ -41,6 +41,7 @@ const workingHoursSchema = z.object({
 
 export const profileSchema = z.object({
   isDisabled: z.boolean().default(false).optional(),
+  isWomenEntrepreneur: z.boolean().default(false).optional(),
   image: z.string().min(1, 'Profile Image is required'),
   logo: optionalUrl,
   categoryId: z.string().min(1, 'Category is required'),

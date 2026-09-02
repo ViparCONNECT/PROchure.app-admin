@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Box, Button, Card, CardContent, CircularProgress, Typography } from '@mui/material';
+import { Box, Button, Card, CardContent, CircularProgress, Typography, FormControlLabel, Switch, Chip } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { FormProvider, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -15,6 +15,8 @@ import type { Profile } from '@/api/types';
 
 function profileToFormValues(profile: Profile): ProfileFormValues {
   return {
+    isDisabled: profile.isDisabled,
+    isWomenEntrepreneur: profile.isWomenEntrepreneur ?? false,
     image: profile.image ?? '',
     logo: profile.logo ?? '',
     categoryId: profile.categoryId ?? profile.category?.id ?? '',
@@ -76,7 +78,12 @@ export function ProfileEditPage() {
     reset,
     formState: { isDirty, isSubmitting },
     setError,
+    setValue,
+    watch,
   } = methods;
+
+  const isDisabled = watch('isDisabled');
+  const isWomen = watch('isWomenEntrepreneur');
 
   useEffect(() => {
     if (profile) {
@@ -143,9 +150,35 @@ export function ProfileEditPage() {
       </Button>
 
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-        <Typography variant="h5" fontWeight={700}>
-          Edit Profile — {profile?.name}
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Typography variant="h5" fontWeight={700}>
+            Edit Profile — {profile?.name}
+          </Typography>
+          {isDisabled && <Chip label="Disabled" color="default" size="small" />}
+        </Box>
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={isDisabled ?? false}
+                onChange={(e) => setValue('isDisabled', e.target.checked, { shouldDirty: true })}
+                color="error"
+              />
+            }
+            label="Disabled"
+            labelPlacement="start"
+          />
+          <FormControlLabel
+            control={
+              <Switch
+                checked={isWomen ?? false}
+                onChange={(e) => setValue('isWomenEntrepreneur', e.target.checked, { shouldDirty: true })}
+              />
+            }
+            label="Women Entrepreneur"
+            labelPlacement="start"
+          />
+        </Box>
       </Box>
 
       <Card>

@@ -12,6 +12,7 @@ import { parseApiError } from '@/utils/api-error';
 
 const DEFAULT_VALUES: ProfileFormValues = {
   isDisabled: false,
+  isWomenEntrepreneur: false,
   image: '',
   logo: '',
   categoryId: '',
@@ -73,11 +74,13 @@ export function ProfileCreatePage() {
   } = methods;
 
   const isDisabled = watch('isDisabled');
+  const isWomen = watch('isWomenEntrepreneur');
 
   const onSubmit = async (values: ProfileFormValues) => {
     // strip empty-string optionals before sending
     const dto = {
       ...values,
+      isWomenEntrepreneur: values.isWomenEntrepreneur ?? false,
       professionalTitle: values.professionalTitle || undefined,
       qualifications: values.qualifications || undefined,
       image: values.image || undefined,
@@ -130,17 +133,29 @@ export function ProfileCreatePage() {
           </Typography>
           {isDisabled && <Chip label="Disabled" color="default" size="small" />}
         </Box>
-        <FormControlLabel
-          control={
-            <Switch
-              checked={isDisabled ?? false}
-              onChange={(e) => setValue('isDisabled', e.target.checked, { shouldDirty: true })}
-              color="error"
-            />
-          }
-          label="Disabled"
-          labelPlacement="start"
-        />
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={isDisabled ?? false}
+                onChange={(e) => setValue('isDisabled', e.target.checked, { shouldDirty: true })}
+                color="error"
+              />
+            }
+            label="Disabled"
+            labelPlacement="start"
+          />
+          <FormControlLabel
+            control={
+              <Switch
+                checked={isWomen ?? false}
+                onChange={(e) => setValue('isWomenEntrepreneur', e.target.checked, { shouldDirty: true })}
+              />
+            }
+            label="Women Entrepreneur"
+            labelPlacement="start"
+          />
+        </Box>
       </Box>
 
       <Card>

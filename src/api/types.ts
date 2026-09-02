@@ -130,6 +130,7 @@ export interface Profile {
   qualifications?: string;
   specializations?: string;
   services?: string;
+  isWomenEntrepreneur?: boolean;
   address: ProfileAddress;
   contact: ProfileContact;
   workingHours?: WorkingHours;
@@ -149,6 +150,7 @@ export interface CreateProfileDto {
   qualifications?: string;
   specializations?: string;
   services?: string;
+  isWomenEntrepreneur?: boolean;
   address: ProfileAddress;
   contact: ProfileContact;
   workingHours?: WorkingHours;

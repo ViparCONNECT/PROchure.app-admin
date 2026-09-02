@@ -147,10 +147,10 @@ export const PROFILE_FIELDS: FormFieldDefinition[] = [
   },
   {
     name: 'subCategoryId',
-    label: 'Profile Type',
+    label: 'Sub-Category',
     type: 'select',
     source: 'subcategories',
-    required: true,
+    required: false,
     create: true,
     edit: true,
   },
@@ -213,6 +213,15 @@ export const PROFILE_FIELDS: FormFieldDefinition[] = [
     maxLength: 1000,
     create: true,
     edit: true,
+  },
+  {
+    name: 'isWomenEntrepreneur',
+    label: 'Women Entrepreneur',
+    type: 'boolean',
+    required: false,
+    create: true,
+    edit: true,
+    helpText: 'Mark if the profile belongs to a woman entrepreneur',
   },
   {
     name: 'image',
