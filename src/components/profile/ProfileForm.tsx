@@ -137,7 +137,7 @@ export function ProfileForm({ mode }: ProfileFormProps) {
       return f;
     });
 
-  const showSubCategory = !!selectedCategory?.isSubCategoryNeeded;
+  const showSubCategory = Boolean(selectedCategory?.isSubCategoryNeeded) || (subcategories ?? []).length > 0;
   const { control } = useFormContext<ProfileFormValues>();
 
   return (
@@ -182,7 +182,12 @@ export function ProfileForm({ mode }: ProfileFormProps) {
           name="subCategoryId"
           control={control}
           render={({ field, fieldState }) => (
-            <FormControl fullWidth required error={!!fieldState.error} disabled={!categoryId}>
+            <FormControl
+              fullWidth
+              required={Boolean(selectedCategory?.isSubCategoryNeeded)}
+              error={!!fieldState.error}
+              disabled={!categoryId}
+            >
               <InputLabel>Sub-Category</InputLabel>
               <Select {...field} label="Sub-Category" value={field.value ?? ''}>
                 <MenuItem value=""><em>Select Sub-Category</em></MenuItem>
@@ -191,7 +196,11 @@ export function ProfileForm({ mode }: ProfileFormProps) {
                 ))}
               </Select>
               {fieldState.error && <FormHelperText>{fieldState.error.message}</FormHelperText>}
-              <FormHelperText>Required when the selected category uses sub-categories</FormHelperText>
+              {selectedCategory?.isSubCategoryNeeded ? (
+                <FormHelperText>Required when the selected category uses sub-categories</FormHelperText>
+              ) : (
+                <FormHelperText>Optional — choose if applicable</FormHelperText>
+              )}
             </FormControl>
           )}
         />
