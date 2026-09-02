@@ -78,6 +78,15 @@ export function ProfileCreatePage() {
       logo: values.logo || undefined,
       subCategoryId: values.subCategoryId || undefined,
       address: { ...values.address, pinCodeZipCode: values.address.pinCodeZipCode ?? '' },
+      contact: {
+        countryCode: values.contact?.countryCode ?? '',
+        officialContactNumber: values.contact?.officialContactNumber ?? '',
+        officialEmailId: values.contact?.officialEmailId ?? '',
+        officialWebsiteApp: values.contact?.officialWebsiteApp ?? '',
+        contactPersonName: values.contact?.contactPersonName ?? '',
+        contactPersonDesignation: values.contact?.contactPersonDesignation ?? '',
+        mostComfortablePreferredLanguages: values.contact?.mostComfortablePreferredLanguages ?? [],
+      },
     };
 
     try {

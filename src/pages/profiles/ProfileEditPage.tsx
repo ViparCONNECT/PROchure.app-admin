@@ -87,6 +87,17 @@ export function ProfileEditPage() {
       logo: values.logo || undefined,
       subCategoryId: values.subCategoryId || undefined,
       address: { ...values.address, pinCodeZipCode: values.address.pinCodeZipCode ?? '' },
+      contact: values.contact
+        ? {
+            countryCode: values.contact.countryCode ?? '',
+            officialContactNumber: values.contact.officialContactNumber ?? '',
+            officialEmailId: values.contact.officialEmailId ?? '',
+            officialWebsiteApp: values.contact.officialWebsiteApp ?? '',
+            contactPersonName: values.contact.contactPersonName ?? '',
+            contactPersonDesignation: values.contact.contactPersonDesignation ?? '',
+            mostComfortablePreferredLanguages: values.contact.mostComfortablePreferredLanguages ?? [],
+          }
+        : { countryCode: '', officialContactNumber: '', officialEmailId: '', officialWebsiteApp: '', contactPersonName: '', contactPersonDesignation: '', mostComfortablePreferredLanguages: [] },
     };
 
     try {
