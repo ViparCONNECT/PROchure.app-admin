@@ -96,7 +96,7 @@ export function ProfileForm({ mode }: ProfileFormProps) {
     // filter out professional-only fields when not a professional consultant
     .filter((f) => {
       if (profileType !== 'PROFESSIONAL_CONSULTANT') {
-        return !['professionalTitle', 'qualifications', 'specializations'].includes(f.name);
+        return !['professionalTitle', 'qualifications', 'specializations', 'services'].includes(f.name);
       }
       return true;
     })

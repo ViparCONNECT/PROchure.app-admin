@@ -44,7 +44,7 @@ export const profileSchema = z.object({
   image: z.string().min(1, 'Profile Image is required'),
   logo: optionalUrl,
   categoryId: z.string().min(1, 'Category is required'),
-  subCategoryId: z.string().min(1, 'Profile Type is required'),
+  subCategoryId: z.string().optional().or(z.literal('')),
   name: z.string().min(1, 'Name is required').max(200),
   professionalTitle: z.string().max(20).optional().or(z.literal('')),
   qualifications: z.string().max(200).optional().or(z.literal('')),
