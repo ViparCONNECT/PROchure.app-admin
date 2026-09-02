@@ -91,6 +91,52 @@ export function ProfileForm({ mode }: ProfileFormProps) {
     (f) => f.name !== 'categoryId' && f.name !== 'subCategoryId' && f.name !== 'workingHours',
   );
 
+  // Adjust which fields show and their labels depending on profile type
+  const dynamicRendererFields = rendererFields
+    // filter out professional-only fields when not a professional consultant
+    .filter((f) => {
+      if (profileType !== 'PROFESSIONAL_CONSULTANT') {
+        return !['professionalTitle', 'qualifications', 'specializations'].includes(f.name);
+      }
+      return true;
+    })
+    .map((f) => {
+      // top-level name label differs between professional vs brand
+      if (f.name === 'name') {
+        return {
+          ...f,
+          label:
+            profileType === 'PROFESSIONAL_CONSULTANT'
+              ? 'NAME of the CONSULTANT / CONSULTATION FIRM'
+              : 'NAME of the SERVICE BRAND / RETAIL BRAND / PRODUCT BRAND',
+        };
+      }
+
+      // year label already dynamic — keep same logic
+      if (f.name === 'yearOfEstablishment') {
+        return {
+          ...f,
+          label:
+            profileType === 'PROFESSIONAL_CONSULTANT'
+              ? 'Year of Starting Practice'
+              : 'Year of Establishment',
+        };
+      }
+
+      // adjust nested section fields (contact) labels
+      if (f.type === 'section' && f.name === 'contact') {
+        const nested = (f.fields ?? []).map((sub) => {
+          if (sub.name === 'contact.contactPersonName') {
+            return { ...sub, label: 'Name of the Profile Creator' };
+          }
+          return sub;
+        });
+        return { ...f, fields: nested };
+      }
+
+      return f;
+    });
+
   const showSubCategory = !!selectedCategory?.isSubCategoryNeeded;
   const { control } = useFormContext<ProfileFormValues>();
 
@@ -151,7 +197,7 @@ export function ProfileForm({ mode }: ProfileFormProps) {
         />
       )}
 
-      <FormRenderer fields={rendererFields} mode={mode} />
+      <FormRenderer fields={dynamicRendererFields} mode={mode} />
       <WorkingHoursSection />
     </Box>
   );
