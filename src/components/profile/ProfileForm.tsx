@@ -73,7 +73,7 @@ export function ProfileForm({ mode }: ProfileFormProps) {
   // (covers the brief window while profileType transitions after cross-profile navigation)
   const filteredCategories = (() => {
     if (!profileType) {
-      return categoryId ? allCategories.filter((c) => c.id === categoryId) : [];
+      return allCategories;
     }
     const byType = allCategories.filter((c) => c.type === profileType);
     if (categoryId && !byType.some((c) => c.id === categoryId)) {
@@ -163,7 +163,7 @@ export function ProfileForm({ mode }: ProfileFormProps) {
         name="categoryId"
         control={control}
         render={({ field, fieldState }) => (
-          <FormControl fullWidth required error={!!fieldState.error} disabled={!profileType}>
+          <FormControl fullWidth required error={!!fieldState.error}>
             <InputLabel>Category</InputLabel>
             <Select {...field} label="Category" value={field.value ?? ''}>
               <MenuItem value=""><em>Select Category</em></MenuItem>
