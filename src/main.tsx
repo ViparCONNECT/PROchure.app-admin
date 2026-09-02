@@ -33,7 +33,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
           autoHideDuration={4000}
         >
-          <BrowserRouter>
+          <BrowserRouter basename="/PROchure.app-admin">
             <App />
           </BrowserRouter>
         </SnackbarProvider>
