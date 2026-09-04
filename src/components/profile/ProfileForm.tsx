@@ -15,10 +15,10 @@ import { useCategories, useSubCategories } from '@/api/categories';
 import type { ProfileFormValues } from '@/schemas/profile.schema';
 
 const PROFILE_TYPE_OPTIONS = [
-  { value: 'PROFESSIONAL_CONSULTANT', label: 'Professional Consultant' },
+  { value: 'PROFESSIONAL_CONSULTANT', label: 'Professional Consultants' },
   { value: 'SERVICE_BRANDS', label: 'Service Brands' },
-  { value: 'PRODUCT_BRANDS', label: 'Product Brands' },
   { value: 'RETAIL_BRANDS', label: 'Retail Brands' },
+  { value: 'PRODUCT_BRANDS', label: 'Product Brands' },
 ];
 
 interface ProfileFormProps {
