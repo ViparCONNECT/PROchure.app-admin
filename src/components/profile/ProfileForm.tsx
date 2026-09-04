@@ -112,16 +112,27 @@ export function ProfileForm({ mode }: ProfileFormProps) {
         };
       }
 
+      if (f.name === 'yearOfPractice') {
+        return {
+          ...f,
+          label:
+            profileType === 'PROFESSIONAL_CONSULTANT'
+              ? 'Year of Starting Practice'
+              : 'Year of Starting Practice',
+        };
+      }
+
       // year label already dynamic — keep same logic
       if (f.name === 'yearOfEstablishment') {
         return {
           ...f,
           label:
             profileType === 'PROFESSIONAL_CONSULTANT'
-              ? 'Year of Starting Practice'
+              ? 'Year of Establishment'
               : 'Year of Establishment',
         };
       }
+
 
       // adjust nested section fields (contact) labels
       if (f.type === 'section' && f.name === 'contact') {
