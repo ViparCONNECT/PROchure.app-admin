@@ -154,7 +154,7 @@ export function ProfileEditPage() {
           <Typography variant="h5" fontWeight={700}>
             Edit Profile — {profile?.name}
           </Typography>
-          {isDisabled && <Chip label="Disabled" color="default" size="small" />}
+          {isDisabled && <Chip label="Disable" color="default" size="small" />}
         </Box>
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
           <FormControlLabel
@@ -165,7 +165,7 @@ export function ProfileEditPage() {
                 color="error"
               />
             }
-            label="Disabled"
+            label="Disable"
             labelPlacement="start"
           />
           <FormControlLabel
@@ -175,7 +175,7 @@ export function ProfileEditPage() {
                 onChange={(e) => setValue('isWomenEntrepreneur', e.target.checked, { shouldDirty: true })}
               />
             }
-            label="Women Entrepreneur"
+            label="SHE-PRO"
             labelPlacement="start"
           />
         </Box>
