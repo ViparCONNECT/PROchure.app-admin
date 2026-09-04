@@ -22,6 +22,7 @@ const DEFAULT_VALUES: ProfileFormValues = {
   qualifications: '',
   yearOfEstablishment: '',
   specializations: '',
+  yearOfPractice: '',
   services: '',
   address: {
     buildingMallPropertyName: '',

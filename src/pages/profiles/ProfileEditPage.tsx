@@ -25,6 +25,7 @@ function profileToFormValues(profile: Profile): ProfileFormValues {
     professionalTitle: profile.professionalTitle ?? '',
     qualifications: profile.qualifications ?? '',
     yearOfEstablishment: profile.yearOfEstablishment ?? '',
+    yearOfPractice: profile.yearOfPractice ?? '',
     specializations: profile.specializations ?? '',
     services: profile.services ?? '',
     address: {

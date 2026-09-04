@@ -50,6 +50,7 @@ export const profileSchema = z.object({
   professionalTitle: z.string().max(20).optional().or(z.literal('')),
   qualifications: z.string().max(200).optional().or(z.literal('')),
   yearOfEstablishment: z.string().max(4).optional().or(z.literal('')),
+  yearOfPractice: z.string().max(4).optional().or(z.literal('')),
   specializations: z.string().max(500).optional().or(z.literal('')),
   services: z.string().max(1000).optional().or(z.literal('')),
   address: addressSchema,
