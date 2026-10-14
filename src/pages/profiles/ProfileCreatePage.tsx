@@ -1,187 +1,78 @@
-import { useNavigate } from 'react-router-dom';
-import { Box, Button, Card, CardContent, Chip, FormControlLabel, Switch, Typography } from '@mui/material';
+import { useMemo } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Box, Button, Card, CardActionArea, CardContent, Typography } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { FormProvider, useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { useSnackbar } from 'notistack';
-import { profileSchema, type ProfileFormValues } from '@/schemas/profile.schema';
 import { useCreateProfile } from '@/api/profiles';
-import { ProfileForm } from '@/components/profile/ProfileForm';
-import { UnsavedChangesGuard } from '@/components/common/UnsavedChangesGuard';
-import { parseApiError } from '@/utils/api-error';
+import { AdminProfileEditor, type AdminProfileSaveInput } from '@/components/profile/AdminProfileEditor';
+import { PROFILE_TYPE_LABEL, PROFILE_TYPE_OPTIONS } from '@/profile-kit/constants';
+import { emptyFormValues } from '@/profile-kit/format';
+import type { ProfileType } from '@/profile-kit/types';
 
-const DEFAULT_VALUES: ProfileFormValues = {
-  isDisabled: false,
-  isWomenEntrepreneur: false,
-  image: '',
-  logo: '',
-  categoryId: '',
-  subCategoryId: '',
-  name: '',
-  professionalTitle: '',
-  qualifications: '',
-  yearOfEstablishment: '',
-  specializations: '',
-  yearOfPractice: '',
-  services: '',
-  address: {
-    buildingMallPropertyName: '',
-    doorShopNo: '',
-    floor: '',
-    streetLaneRoadNameSubLocality: '',
-    nearestLandmark: '',
-    secondaryPrimaryLocality: '',
-    cityTown: '',
-    stateProvince: '',
-    country: '',
-    pinCodeZipCode: '',
-  },
-  contact: {
-    countryCode: '',
-    officialContactNumber: '',
-    officialEmailId: '',
-    officialWebsiteApp: '',
-    contactPersonName: '',
-    contactPersonDesignation: '',
-    mostComfortablePreferredLanguages: [],
-  },
-  workingHours: {
-    monday: '',
-    tuesday: '',
-    wednesday: '',
-    thursday: '',
-    friday: '',
-    saturday: '',
-    sunday: '',
-  },
-};
+const isProfileType = (v: string | null): v is ProfileType => PROFILE_TYPE_OPTIONS.some((o) => o.value === v);
 
 export function ProfileCreatePage() {
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const createProfile = useCreateProfile();
+  const [params, setParams] = useSearchParams();
+  const typeParam = params.get('type');
+  const profileType = isProfileType(typeParam) ? typeParam : null;
+  const initialValues = useMemo(() => emptyFormValues(), []);
 
-  const methods = useForm<ProfileFormValues>({
-    resolver: zodResolver(profileSchema),
-    defaultValues: DEFAULT_VALUES,
-  });
-
-  const {
-    handleSubmit,
-    watch,
-    setValue,
-    formState: { isDirty, isSubmitting },
-    setError,
-  } = methods;
-
-  const isDisabled = watch('isDisabled');
-  const isWomen = watch('isWomenEntrepreneur');
-
-  const onSubmit = async (values: ProfileFormValues) => {
-    // strip empty-string optionals before sending
-    const dto = {
-      ...values,
-      isWomenEntrepreneur: values.isWomenEntrepreneur ?? false,
-      professionalTitle: values.professionalTitle || undefined,
-      qualifications: values.qualifications || undefined,
-      image: values.image || undefined,
-      logo: values.logo || undefined,
-      subCategoryId: values.subCategoryId || undefined,
-      specializations: values.specializations || undefined,
-      services: values.services || undefined,
-      address: { ...values.address, pinCodeZipCode: values.address.pinCodeZipCode ?? '' },
-      contact: {
-        countryCode: values.contact?.countryCode ?? '',
-        officialContactNumber: values.contact?.officialContactNumber ?? '',
-        officialEmailId: values.contact?.officialEmailId ?? '',
-        officialWebsiteApp: values.contact?.officialWebsiteApp ?? '',
-        contactPersonName: values.contact?.contactPersonName ?? '',
-        contactPersonDesignation: values.contact?.contactPersonDesignation ?? '',
-        mostComfortablePreferredLanguages: values.contact?.mostComfortablePreferredLanguages ?? [],
-      },
-    };
-
-    try {
-      await createProfile.mutateAsync(dto);
-      enqueueSnackbar('Profile created.', { variant: 'success' });
-      navigate('/profiles');
-    } catch (err) {
-      const parsed = parseApiError(err);
-      if (parsed.fieldErrors) {
-        Object.entries(parsed.fieldErrors).forEach(([field, msg]) => {
-          setError(field as keyof ProfileFormValues, { message: msg });
-        });
-      } else {
-        enqueueSnackbar(parsed.message, { variant: 'error' });
-      }
-    }
+  const handleSave = async ({ payload, owner, isDisabled }: AdminProfileSaveInput) => {
+    await createProfile.mutateAsync({ ...payload, owner, isDisabled });
+    enqueueSnackbar('Profile created and published. The owner can now log in on the app.', { variant: 'success' });
+    navigate('/profiles');
   };
 
   return (
-    <Box maxWidth={800}>
+    <Box maxWidth={1280}>
       <Button
         startIcon={<ArrowBackIcon />}
-        onClick={() => navigate('/profiles')}
+        onClick={() => (profileType ? setParams({}) : navigate('/profiles'))}
         sx={{ mb: 2 }}
       >
-        Back to Profiles
+        {profileType ? 'Change profile type' : 'Back to Profiles'}
       </Button>
 
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Typography variant="h5" fontWeight={700}>
-            New Profile
-          </Typography>
-          {isDisabled && <Chip label="Disable" color="default" size="small" />}
-        </Box>
-        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-          <FormControlLabel
-            control={
-              <Switch
-                checked={isDisabled ?? false}
-                onChange={(e) => setValue('isDisabled', e.target.checked, { shouldDirty: true })}
-                color="error"
-              />
-            }
-            label="Disable"
-            labelPlacement="start"
-          />
-          <FormControlLabel
-            control={
-              <Switch
-                checked={isWomen ?? false}
-                onChange={(e) => setValue('isWomenEntrepreneur', e.target.checked, { shouldDirty: true })}
-              />
-            }
-            label="SHE-PRO"
-            labelPlacement="start"
-          />
-        </Box>
-      </Box>
+      <Typography variant="h5" fontWeight={700} sx={{ mb: 3 }}>
+        New Profile{profileType ? ` — ${PROFILE_TYPE_LABEL[profileType]}` : ''}
+      </Typography>
 
-      <Card>
-        <CardContent sx={{ p: 3 }}>
-          <FormProvider {...methods}>
-            <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
-              <ProfileForm mode="create" />
-              <Box sx={{ display: 'flex', gap: 1, mt: 3, justifyContent: 'flex-end' }}>
-                <Button onClick={() => navigate('/profiles')} disabled={isSubmitting}>
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  disabled={isSubmitting || !isDirty}
-                >
-                  {isSubmitting ? 'Creating…' : 'Create Profile'}
-                </Button>
-              </Box>
-            </Box>
-          </FormProvider>
-        </CardContent>
-      </Card>
-
-      <UnsavedChangesGuard isDirty={isDirty && !isSubmitting} />
+      {!profileType ? (
+        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, maxWidth: 720 }}>
+          {PROFILE_TYPE_OPTIONS.map((o) => (
+            <Card key={o.value} variant="outlined">
+              <CardActionArea onClick={() => setParams({ type: o.value })} sx={{ p: 1 }}>
+                <CardContent>
+                  <Typography variant="h6" fontWeight={700}>
+                    {o.label}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {o.value === 'PROFESSIONAL_CONSULTANT'
+                      ? 'Independent professionals and professional consultancies'
+                      : 'Service brands and retail brands / outlets'}
+                  </Typography>
+                </CardContent>
+              </CardActionArea>
+            </Card>
+          ))}
+        </Box>
+      ) : (
+        <Card>
+          <CardContent sx={{ p: 3 }}>
+            <AdminProfileEditor
+              key={profileType}
+              profileType={profileType}
+              initialValues={initialValues}
+              submitLabel="Create & publish profile"
+              onSave={handleSave}
+              onCancel={() => navigate('/profiles')}
+            />
+          </CardContent>
+        </Card>
+      )}
     </Box>
   );
 }

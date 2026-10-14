@@ -29,7 +29,7 @@ export async function createProfile(dto: CreateProfileDto) {
 }
 
 export async function updateProfile(id: string, dto: UpdateProfileDto) {
-  const { data } = await apiClient.patch<ApiResponse<Profile>>(`/profiles/${id}`, dto);
+  const { data } = await apiClient.put<ApiResponse<Profile>>(`/profiles/${id}`, dto);
   return data.data;
 }
 

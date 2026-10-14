@@ -36,18 +36,23 @@ import { PageError } from '@/components/common/ErrorDisplay';
 import { useTablePreferences } from '@/hooks/useTablePreferences';
 import { parseApiError } from '@/utils/api-error';
 import { formatDateTime } from '@/utils/formatters';
-import type { Profile, ProfileListParams } from '@/api/types';
+import type { Profile, ProfileListParams, ProfileStatus } from '@/api/types';
+import { PROFILE_TYPE_LABEL, PROFILE_TYPE_OPTIONS } from '@/profile-kit/constants';
+import { formatPhone } from '@/profile-kit/format';
+import type { ProfileType } from '@/profile-kit/types';
 
-const PROFILE_TYPE_OPTIONS = [
-  { value: 'PROFESSIONAL_CONSULTANT', label: 'Professional Consultant' },
-  { value: 'SERVICE_BRANDS', label: 'Service Brands' },
-  { value: 'PRODUCT_BRANDS', label: 'Product Brands' },
-  { value: 'RETAIL_BRANDS', label: 'Retail Brands' },
+const STATUS_FILTERS = [
+  { value: '', label: 'All' },
+  { value: 'live', label: 'Live' },
+  { value: 'PENDING_PAYMENT', label: 'Pending payment' },
+  { value: 'disabled', label: 'Disabled' },
 ];
 
-const PROFILE_TYPE_LABEL: Record<string, string> = Object.fromEntries(
-  PROFILE_TYPE_OPTIONS.map((o) => [o.value, o.label]),
-);
+function statusChip(p: Profile) {
+  if (p.isDisabled) return <Chip label="Disabled" size="small" />;
+  if (p.status === 'PENDING_PAYMENT') return <Chip label="Pending payment" size="small" color="warning" />;
+  return <Chip label="Live" size="small" color="success" />;
+}
 
 export function ProfilesPage() {
   const navigate = useNavigate();
@@ -60,7 +65,8 @@ export function ProfilesPage() {
   const [searchInput, setSearchInput] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [subCategoryId, setSubCategoryId] = useState('');
-  const [profileType, setProfileType] = useState('');
+  const [profileType, setProfileType] = useState<ProfileType | ''>('');
+  const [statusFilter, setStatusFilter] = useState('');
 
   const [deleteTarget, setDeleteTarget] = useState<Profile | null>(null);
 
@@ -68,8 +74,12 @@ export function ProfilesPage() {
     page: page + 1,
     limit,
     search: search || undefined,
+    type: profileType || undefined,
     categoryId: categoryId || undefined,
     subCategoryId: subCategoryId || undefined,
+    ...(statusFilter === 'live' ? { status: 'ACTIVE' as ProfileStatus, isDisabled: false } : {}),
+    ...(statusFilter === 'PENDING_PAYMENT' ? { status: 'PENDING_PAYMENT' as ProfileStatus } : {}),
+    ...(statusFilter === 'disabled' ? { isDisabled: true } : {}),
   };
 
   const { data, isLoading, error, refetch } = useProfiles(params);
@@ -85,7 +95,7 @@ export function ProfilesPage() {
     setPage(0);
   };
 
-  const handleProfileTypeChange = (val: string) => {
+  const handleProfileTypeChange = (val: ProfileType | '') => {
     setProfileType(val);
     setCategoryId('');
     setSubCategoryId('');
@@ -162,11 +172,24 @@ export function ProfilesPage() {
             <Select
               value={profileType}
               label="Profile Type"
-              onChange={(e) => handleProfileTypeChange(e.target.value)}
+              onChange={(e) => handleProfileTypeChange(e.target.value as ProfileType | '')}
             >
               <MenuItem value="">All Types</MenuItem>
               {PROFILE_TYPE_OPTIONS.map((opt) => (
                 <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <FormControl size="small" sx={{ minWidth: 160 }}>
+            <InputLabel>Status</InputLabel>
+            <Select
+              value={statusFilter}
+              label="Status"
+              onChange={(e) => { setStatusFilter(e.target.value); setPage(0); }}
+            >
+              {STATUS_FILTERS.map((s) => (
+                <MenuItem key={s.value} value={s.value}>{s.label}</MenuItem>
               ))}
             </Select>
           </FormControl>
@@ -216,6 +239,7 @@ export function ProfilesPage() {
               setCategoryId('');
               setSubCategoryId('');
               setProfileType('');
+              setStatusFilter('');
               setPage(0);
             }}
           >
@@ -232,6 +256,7 @@ export function ProfilesPage() {
               <TableCell>Profile Type</TableCell>
               <TableCell>Category</TableCell>
               <TableCell>Sub-Category</TableCell>
+              <TableCell>Owner login</TableCell>
               <TableCell>City</TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Created</TableCell>
@@ -241,13 +266,13 @@ export function ProfilesPage() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={8} align="center" sx={{ py: 6 }}>
+                <TableCell colSpan={9} align="center" sx={{ py: 6 }}>
                   <CircularProgress />
                 </TableCell>
               </TableRow>
             ) : !data?.items?.length ? (
               <TableRow>
-                <TableCell colSpan={8}>
+                <TableCell colSpan={9}>
                   <EmptyState
                     message="No profiles found"
                     action={{ label: 'Create Profile', onClick: () => navigate('/profiles/new') }}
@@ -264,7 +289,7 @@ export function ProfilesPage() {
                   </TableCell>
                   <TableCell>
                     <Chip
-                      label={PROFILE_TYPE_LABEL[profile.category?.type ?? ''] ?? profile.category?.type ?? '—'}
+                      label={profile.category?.type ? PROFILE_TYPE_LABEL[profile.category.type] : '—'}
                       size="small"
                       variant="outlined"
                       color="primary"
@@ -276,17 +301,24 @@ export function ProfilesPage() {
                     </Typography>
                   </TableCell>
                   <TableCell>
-                    <Typography variant="caption">{profile.sub_category?.name ?? '—'}</Typography>
+                    <Typography variant="caption">{profile.subCategory?.name ?? '—'}</Typography>
+                  </TableCell>
+                  <TableCell>
+                    {profile.user ? (
+                      <Typography variant="caption" component="div">
+                        {profile.user.email}
+                        <br />
+                        {formatPhone(profile.user.phone)}
+                      </Typography>
+                    ) : (
+                      <Typography variant="caption" color="warning.main">No login</Typography>
+                    )}
                   </TableCell>
                   <TableCell>
                     <Typography variant="caption">{profile.address?.cityTown ?? '—'}</Typography>
                   </TableCell>
                   <TableCell>
-                    <Chip
-                      label={profile.isDisabled ? 'Disabled' : 'Active'}
-                      size="small"
-                      color={profile.isDisabled ? 'default' : 'success'}
-                    />
+                    {statusChip(profile)}
                   </TableCell>
                   <TableCell>
                     <Typography variant="caption">{formatDateTime(profile.createdAt)}</Typography>

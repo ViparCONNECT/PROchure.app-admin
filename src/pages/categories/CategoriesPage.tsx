@@ -47,13 +47,9 @@ import {
 } from '@/schemas/category.schema';
 import { parseApiError } from '@/utils/api-error';
 import type { Category } from '@/api/types';
+import { PROFILE_TYPE_OPTIONS } from '@/profile-kit/constants';
 
-const TYPE_OPTIONS = [
-  { value: 'PROFESSIONAL_CONSULTANT', label: 'Professional Consultant' },
-  { value: 'SERVICE_BRANDS', label: 'Service Brands' },
-  { value: 'PRODUCT_BRANDS', label: 'Product Brands' },
-  { value: 'RETAIL_BRANDS', label: 'Retail Brands' },
-] as const;
+const TYPE_OPTIONS = PROFILE_TYPE_OPTIONS;
 
 export function CategoriesPage() {
   const navigate = useNavigate();

@@ -1,14 +1,12 @@
+import type { ProfilePayload } from '@/profile-kit/types';
+
 // ─── Roles ────────────────────────────────────────────────────────────────────
 
 export type AdminRole = 'SUPER_ADMIN' | 'ADMIN';
 
 // ─── Category ─────────────────────────────────────────────────────────────────
 
-export type CategoryType =
-  | 'PROFESSIONAL_CONSULTANT'
-  | 'SERVICE_BRANDS'
-  | 'PRODUCT_BRANDS'
-  | 'RETAIL_BRANDS';
+export type CategoryType = 'PROFESSIONAL_CONSULTANT' | 'SERVICE_AND_RETAIL_BRANDS';
 
 export interface Category {
   id: string;
@@ -82,83 +80,37 @@ export interface UpdateAdminDto {
 
 // ─── Profile ──────────────────────────────────────────────────────────────────
 
-export interface ProfileAddress {
-  buildingMallPropertyName?: string;
-  doorShopNo?: string;
-  floor?: string;
-  streetLaneRoadNameSubLocality?: string;
-  nearestLandmark?: string;
-  secondaryPrimaryLocality?: string;
-  cityTown: string;
-  stateProvince: string;
-  country: string;
-  pinCodeZipCode: string;
+export type ProfileStatus = 'PENDING_PAYMENT' | 'ACTIVE';
+
+export interface ProfileOwner {
+  email: string;
+  /** E.164, e.g. +919876543210 */
+  phone: string;
 }
 
-export interface ProfileContact {
-  countryCode?: string;
-  officialContactNumber: string;
-  officialEmailId: string;
-  officialWebsiteApp?: string;
-  contactPersonName?: string;
-  contactPersonDesignation?: string;
-  mostComfortablePreferredLanguages?: string[];
-}
-
-export interface WorkingHours {
-  monday?: string;
-  tuesday?: string;
-  wednesday?: string;
-  thursday?: string;
-  friday?: string;
-  saturday?: string;
-  sunday?: string;
-}
-
-export interface Profile {
+export interface Profile extends Omit<ProfilePayload, 'profileType' | 'subCategoryId'> {
   id: string;
+  status: ProfileStatus;
   isDisabled: boolean;
-  image?: string;
-  logo?: string;
-  categoryId: string;
-  category?: Pick<Category, 'id' | 'name' | 'type'>;
-  subCategoryId?: string;
-  sub_category?: Pick<SubCategory, 'id' | 'name'>;
-  name: string;
-  yearOfEstablishment?: string;
-  yearOfPractice?: string;
-  professionalTitle?: string;
-  qualifications?: string;
-  specializations?: string;
-  services?: string;
-  isWomenEntrepreneur?: boolean;
-  address: ProfileAddress;
-  contact: ProfileContact;
-  workingHours?: WorkingHours;
+  subCategoryId?: string | null;
+  category?: Pick<Category, 'id' | 'name' | 'type' | 'isSubCategoryNeeded'>;
+  subCategory?: Pick<SubCategory, 'id' | 'name'> | null;
+  user?: ({ id: string; name: string } & ProfileOwner) | null;
+  publishedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface CreateProfileDto {
+export interface CreateProfileDto extends ProfilePayload {
   isDisabled?: boolean;
-  image?: string;
-  logo?: string;
-  categoryId: string;
-  subCategoryId?: string;
-  name: string;
-  yearOfEstablishment?: string;
-  yearOfPractice?: string;
-  professionalTitle?: string;
-  qualifications?: string;
-  specializations?: string;
-  services?: string;
-  isWomenEntrepreneur?: boolean;
-  address: ProfileAddress;
-  contact: ProfileContact;
-  workingHours?: WorkingHours;
+  owner: ProfileOwner;
 }
 
-export type UpdateProfileDto = Partial<CreateProfileDto>;
+export interface UpdateProfileDto extends ProfilePayload {
+  isDisabled?: boolean;
+  /** Only accepted while the profile has no owner */
+  owner?: ProfileOwner;
+}
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
@@ -234,8 +186,10 @@ export interface CategoryListParams extends PaginationParams {
 
 export interface ProfileListParams extends PaginationParams {
   search?: string;
+  type?: CategoryType;
   categoryId?: string;
   subCategoryId?: string;
+  status?: ProfileStatus;
   isDisabled?: boolean;
 }
 

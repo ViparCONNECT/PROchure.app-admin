@@ -1,11 +1,6 @@
 import { z } from 'zod';
 
-const CATEGORY_TYPES = [
-  'PROFESSIONAL_CONSULTANT',
-  'SERVICE_BRANDS',
-  'PRODUCT_BRANDS',
-  'RETAIL_BRANDS',
-] as const;
+const CATEGORY_TYPES = ['PROFESSIONAL_CONSULTANT', 'SERVICE_AND_RETAIL_BRANDS'] as const;
 
 export const createCategorySchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
