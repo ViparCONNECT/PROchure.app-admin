@@ -70,8 +70,10 @@ export default function ProfileForm({
     const labels = variantLabels(profileType, values.consultantKind || "INDEPENDENT");
     const selectedCategory = categories.find((c) => c.id === values.categoryId);
     const needsSub = !!selectedCategory?.isSubCategoryNeeded;
-    const needsGroup = groups.length > 0;
-    const groupCategories = needsGroup ? categories.filter((c) => c.groupId === values.categoryGroupId) : categories;
+    // A single category type is selected automatically and its select is hidden
+    const needsGroup = groups.length > 1;
+    const groupId = groups.length === 1 ? groups[0].id : values.categoryGroupId;
+    const groupCategories = groups.length > 0 ? categories.filter((c) => c.groupId === groupId) : categories;
     const errors: FormErrors = showErrors ? validateProfile(profileType, values, needsSub, needsGroup) : {};
     const cardData = useMemo(() => toCardData(profileType, values), [profileType, values]);
 
@@ -147,7 +149,7 @@ export default function ProfileForm({
                     <legend className="pk-legend">Category</legend>
                     {loadError && <div className="pk-alert">{loadError}</div>}
                     {needsGroup && (
-                        <Field label="Category type" required error={errors.categoryGroupId}>
+                        <Field label={isConsultant ? "PROFESSIONAL CONSULTANTS" : "SERVICE & RETAIL BRANDS"} required error={errors.categoryGroupId}>
                             {(id) => (
                                 <select
                                     id={id}
@@ -158,7 +160,7 @@ export default function ProfileForm({
                                         setValues((v) => ({ ...v, categoryGroupId: e.target.value, categoryId: "", subCategoryId: "" }))
                                     }
                                 >
-                                    <option value="">Select a category type</option>
+                                    <option value="">Select</option>
                                     {groups.map((g) => (
                                         <option key={g.id} value={g.id}>
                                             {g.name}
