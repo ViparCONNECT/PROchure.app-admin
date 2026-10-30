@@ -3,6 +3,7 @@ import apiClient from './client';
 import type {
   ApiResponse,
   CreateProfileDto,
+  PaymentLink,
   Profile,
   ProfileListParams,
   RawPaginatedPayload,
@@ -35,6 +36,14 @@ export async function updateProfile(id: string, dto: UpdateProfileDto) {
 
 export async function deleteProfile(id: string) {
   await apiClient.delete(`/profiles/${id}`);
+}
+
+/** Shareable no-login payment link; `regenerate` invalidates the previous link. */
+export async function getPaymentLink(id: string, regenerate = false) {
+  const { data } = await apiClient.post<ApiResponse<PaymentLink>>(`/profiles/${id}/payment-link`, {}, {
+    params: regenerate ? { regenerate: true } : {},
+  });
+  return data.data;
 }
 
 // ─── Query / Mutation hooks ────────────────────────────────────────────────────

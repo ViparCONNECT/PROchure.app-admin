@@ -48,6 +48,7 @@ import {
 import { parseApiError } from '@/utils/api-error';
 import type { Category } from '@/api/types';
 import { PROFILE_TYPE_OPTIONS } from '@/profile-kit/constants';
+import { useCategoryGroups } from '@/api/categoryGroups';
 
 const TYPE_OPTIONS = PROFILE_TYPE_OPTIONS;
 
@@ -85,6 +86,9 @@ export function CategoriesPage() {
   });
 
   const createIsSubNeeded = watchCreate('isSubCategoryNeeded');
+  const createType = watchCreate('type');
+  const createGroupId = watchCreate('groupId');
+  const { data: createGroups } = useCategoryGroups(createType || undefined);
 
   const onCreateSubmit = async (values: CreateCategoryFormValues) => {
     try {
@@ -108,10 +112,16 @@ export function CategoriesPage() {
   } = useForm<UpdateCategoryFormValues>({ resolver: zodResolver(updateCategorySchema) });
 
   const editIsSubNeeded = watchEdit('isSubCategoryNeeded');
+  const editGroupId = watchEdit('groupId');
+  const { data: editGroups } = useCategoryGroups(editTarget?.type);
 
   const openEdit = (cat: Category) => {
     setEditTarget(cat);
-    resetEdit({ name: cat.name, isSubCategoryNeeded: cat.isSubCategoryNeeded });
+    resetEdit({
+      name: cat.name,
+      isSubCategoryNeeded: cat.isSubCategoryNeeded,
+      groupId: cat.groupId ?? undefined,
+    });
   };
 
   const onEditSubmit = async (values: UpdateCategoryFormValues) => {
@@ -221,6 +231,11 @@ export function CategoriesPage() {
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
                   <Typography variant="h6">{cat.name}</Typography>
                   <Chip label={cat.type} size="small" variant="outlined" />
+                  {cat.group ? (
+                    <Chip label={cat.group.name} size="small" color="primary" variant="outlined" />
+                  ) : (
+                    <Chip label="No category type" size="small" color="warning" />
+                  )}
                   {!cat.isSubCategoryNeeded && (
                     <Chip label="No Sub-Category" size="small" color="default" />
                   )}
@@ -293,10 +308,34 @@ export function CategoriesPage() {
               defaultValue=""
               error={!!createErrors.type}
               helperText={createErrors.type?.message}
+              onChange={(e) => {
+                setCreateValue('type', e.target.value as CreateCategoryFormValues['type'], { shouldValidate: true });
+                setCreateValue('groupId', '');
+              }}
             >
               {TYPE_OPTIONS.map((opt) => (
                 <MenuItem key={opt.value} value={opt.value}>
                   {opt.label}
+                </MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              select
+              label="Category Type"
+              fullWidth
+              required
+              disabled={!createType}
+              value={createGroupId ?? ''}
+              onChange={(e) => setCreateValue('groupId', e.target.value, { shouldValidate: true })}
+              error={!!createErrors.groupId}
+              helperText={
+                createErrors.groupId?.message ??
+                (createType && !createGroups?.length ? 'Create a category type for this profile type first' : undefined)
+              }
+            >
+              {(createGroups ?? []).map((g) => (
+                <MenuItem key={g.id} value={g.id}>
+                  {g.name}
                 </MenuItem>
               ))}
             </TextField>
@@ -347,6 +386,21 @@ export function CategoriesPage() {
               error={!!editErrors.name}
               helperText={editErrors.name?.message}
             />
+            <TextField
+              select
+              label="Category Type"
+              fullWidth
+              value={editGroupId ?? ''}
+              onChange={(e) => setEditValue('groupId', e.target.value, { shouldDirty: true })}
+              error={!!editErrors.groupId}
+              helperText={editErrors.groupId?.message}
+            >
+              {(editGroups ?? []).map((g) => (
+                <MenuItem key={g.id} value={g.id}>
+                  {g.name}
+                </MenuItem>
+              ))}
+            </TextField>
             <FormControlLabel
               control={
                 <Switch

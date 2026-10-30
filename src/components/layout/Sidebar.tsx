@@ -44,6 +44,7 @@ const NAV_ITEMS: NavItem[] = [
     label: 'Categories',
     icon: <CategoryIcon />,
     children: [
+      { label: 'Category Types', path: '/category-types', icon: <CategoryIcon fontSize="small" /> },
       { label: 'All Categories', path: '/categories', icon: <CategoryIcon fontSize="small" /> },
     ],
   },

@@ -3,8 +3,15 @@ import { AxiosError } from 'axios';
 import ProfileForm from '@/profile-kit/ProfileForm';
 import { COUNTRY_CODES } from '@/profile-kit/constants';
 import { splitPhone, type ProfileFormValues } from '@/profile-kit/format';
-import type { CategoryOption, ProfilePayload, ProfileType, SubCategoryOption } from '@/profile-kit/types';
+import type {
+  CategoryGroupOption,
+  CategoryOption,
+  ProfilePayload,
+  ProfileType,
+  SubCategoryOption,
+} from '@/profile-kit/types';
 import { fetchCategories, fetchSubCategories } from '@/api/categories';
+import { fetchCategoryGroups } from '@/api/categoryGroups';
 import type { ProfileOwner } from '@/api/types';
 import { UnsavedChangesGuard } from '@/components/common/UnsavedChangesGuard';
 import { parseApiError } from '@/utils/api-error';
@@ -17,7 +24,11 @@ const loadCategories = async (type: ProfileType): Promise<CategoryOption[]> =>
     id: c.id,
     name: c.name,
     isSubCategoryNeeded: c.isSubCategoryNeeded,
+    groupId: c.groupId ?? null,
   }));
+
+const loadCategoryGroups = async (type: ProfileType): Promise<CategoryGroupOption[]> =>
+  (await fetchCategoryGroups(type)).map((g) => ({ id: g.id, name: g.name }));
 
 const loadSubCategories = async (categoryId: string): Promise<SubCategoryOption[]> =>
   (await fetchSubCategories(categoryId)).map((s) => ({ id: s.id, name: s.name }));
@@ -148,6 +159,7 @@ export function AdminProfileEditor({
       <ProfileForm
         profileType={profileType}
         initialValues={initialValues}
+        loadCategoryGroups={loadCategoryGroups}
         loadCategories={loadCategories}
         loadSubCategories={loadSubCategories}
         getErrorMessages={getErrorMessages}

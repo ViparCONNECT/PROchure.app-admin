@@ -3,15 +3,33 @@ import { useEffect, useId, useMemo, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
 import "./profile-kit.css";
 import ProfileCard from "./ProfileCard";
-import { ADDRESS_FIELDS, COUNTRY_CODES, LANGUAGES, MAX_CONTACTS, variantLabels } from "./constants";
+import {
+    ADDRESS_FIELDS,
+    CORE_SERVICES_MAX,
+    COUNTRY_CODES,
+    LANGUAGES,
+    MAX_CONTACTS,
+    SERVICES_DETAIL_MAX,
+    variantLabels,
+} from "./constants";
 import { toCardData, toPayload, validateProfile } from "./format";
 import type { FormErrors, ProfileFormValues } from "./format";
-import type { CategoryOption, DaySchedule, ProfilePayload, ProfileType, SubCategoryOption, WorkingHours } from "./types";
+import type {
+    CategoryGroupOption,
+    CategoryOption,
+    DaySchedule,
+    ProfilePayload,
+    ProfileType,
+    SubCategoryOption,
+    WorkingHours,
+} from "./types";
 
 /** Pass stable (module-level or memoised) functions for the loaders and getErrorMessages. */
 export interface ProfileFormProps {
     profileType: ProfileType;
     initialValues: ProfileFormValues;
+    /** Category types (groups) for the profile type, in display order */
+    loadCategoryGroups: (type: ProfileType) => Promise<CategoryGroupOption[]>;
     loadCategories: (type: ProfileType) => Promise<CategoryOption[]>;
     loadSubCategories: (categoryId: string) => Promise<SubCategoryOption[]>;
     /** Throw to show an error; the form stays filled in. */
@@ -28,6 +46,7 @@ export interface ProfileFormProps {
 export default function ProfileForm({
     profileType,
     initialValues,
+    loadCategoryGroups,
     loadCategories,
     loadSubCategories,
     onSubmit,
@@ -39,6 +58,7 @@ export default function ProfileForm({
     header,
 }: ProfileFormProps) {
     const [values, setValues] = useState<ProfileFormValues>(initialValues);
+    const [groups, setGroups] = useState<CategoryGroupOption[]>([]);
     const [categories, setCategories] = useState<CategoryOption[]>([]);
     const [subCategories, setSubCategories] = useState<SubCategoryOption[]>([]);
     const [loadError, setLoadError] = useState<string | null>(null);
@@ -50,7 +70,9 @@ export default function ProfileForm({
     const labels = variantLabels(profileType, values.consultantKind || "INDEPENDENT");
     const selectedCategory = categories.find((c) => c.id === values.categoryId);
     const needsSub = !!selectedCategory?.isSubCategoryNeeded;
-    const errors: FormErrors = showErrors ? validateProfile(profileType, values, needsSub) : {};
+    const needsGroup = groups.length > 0;
+    const groupCategories = needsGroup ? categories.filter((c) => c.groupId === values.categoryGroupId) : categories;
+    const errors: FormErrors = showErrors ? validateProfile(profileType, values, needsSub, needsGroup) : {};
     const cardData = useMemo(() => toCardData(profileType, values), [profileType, values]);
 
     const dirty = useMemo(() => JSON.stringify(values) !== JSON.stringify(initialValues), [values, initialValues]);
@@ -58,13 +80,23 @@ export default function ProfileForm({
 
     useEffect(() => {
         let alive = true;
-        loadCategories(profileType)
-            .then((c) => alive && setCategories(c))
+        Promise.all([loadCategoryGroups(profileType), loadCategories(profileType)])
+            .then(([g, c]) => {
+                if (!alive) return;
+                setGroups(g);
+                setCategories(c);
+                // Editing an existing profile: preselect the category type of its category
+                setValues((v) =>
+                    v.categoryGroupId || !v.categoryId
+                        ? v
+                        : { ...v, categoryGroupId: c.find((x) => x.id === v.categoryId)?.groupId ?? "" },
+                );
+            })
             .catch((e) => alive && setLoadError(getErrorMessages(e)[0] ?? "Could not load categories"));
         return () => {
             alive = false;
         };
-    }, [profileType, loadCategories, getErrorMessages]);
+    }, [profileType, loadCategoryGroups, loadCategories, getErrorMessages]);
 
     useEffect(() => {
         let alive = true;
@@ -91,7 +123,7 @@ export default function ProfileForm({
         e.preventDefault();
         setShowErrors(true);
         setServerErrors([]);
-        if (Object.keys(validateProfile(profileType, values, needsSub)).length) {
+        if (Object.keys(validateProfile(profileType, values, needsSub, needsGroup)).length) {
             setServerErrors(["Please fix the highlighted fields."]);
             return;
         }
@@ -114,6 +146,28 @@ export default function ProfileForm({
                 <fieldset className="pk-fieldset">
                     <legend className="pk-legend">Category</legend>
                     {loadError && <div className="pk-alert">{loadError}</div>}
+                    {needsGroup && (
+                        <Field label="Category type" required error={errors.categoryGroupId}>
+                            {(id) => (
+                                <select
+                                    id={id}
+                                    className="pk-select"
+                                    value={values.categoryGroupId}
+                                    aria-invalid={!!errors.categoryGroupId}
+                                    onChange={(e) =>
+                                        setValues((v) => ({ ...v, categoryGroupId: e.target.value, categoryId: "", subCategoryId: "" }))
+                                    }
+                                >
+                                    <option value="">Select a category type</option>
+                                    {groups.map((g) => (
+                                        <option key={g.id} value={g.id}>
+                                            {g.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            )}
+                        </Field>
+                    )}
                     <div className="pk-grid-2">
                         <Field label="Category" required error={errors.categoryId}>
                             {(id) => (
@@ -122,10 +176,13 @@ export default function ProfileForm({
                                     className="pk-select"
                                     value={values.categoryId}
                                     aria-invalid={!!errors.categoryId}
+                                    disabled={needsGroup && !values.categoryGroupId}
                                     onChange={(e) => setValues((v) => ({ ...v, categoryId: e.target.value, subCategoryId: "" }))}
                                 >
-                                    <option value="">Select a category</option>
-                                    {categories.map((c) => (
+                                    <option value="">
+                                        {needsGroup && !values.categoryGroupId ? "Select a category type first" : "Select a category"}
+                                    </option>
+                                    {groupCategories.map((c) => (
                                         <option key={c.id} value={c.id}>
                                             {c.name}
                                         </option>
@@ -134,7 +191,7 @@ export default function ProfileForm({
                             )}
                         </Field>
                         {(needsSub || subCategories.length > 0) && (
-                            <Field label="Subcategory" required={needsSub} error={errors.subCategoryId}>
+                            <Field label="Sub-category" required={needsSub} error={errors.subCategoryId}>
                                 {(id) => (
                                     <select
                                         id={id}
@@ -143,7 +200,7 @@ export default function ProfileForm({
                                         aria-invalid={!!errors.subCategoryId}
                                         onChange={(e) => set("subCategoryId", e.target.value)}
                                     >
-                                        <option value="">{needsSub ? "Select a subcategory" : "None"}</option>
+                                        <option value="">{needsSub ? "Select a sub-category" : "None"}</option>
                                         {subCategories.map((s) => (
                                             <option key={s.id} value={s.id}>
                                                 {s.name}
@@ -158,18 +215,18 @@ export default function ProfileForm({
 
                 {/* Card front */}
                 <fieldset className="pk-fieldset">
-                    <legend className="pk-legend">Card details</legend>
+                    <legend className="pk-legend">PROFILE CREATION</legend>
 
                     {isConsultant && (
                         <div className="pk-field">
                             <span className="pk-label">
-                                Are you an <span className="pk-req">*</span>
+                                For <span className="pk-req">*</span>
                             </span>
                             <div className="pk-radio-group" role="radiogroup">
                                 {(
                                     [
-                                        ["INDEPENDENT", "INDEPENDENT Professional Consultants"],
-                                        ["CONSULTANCY", "Professional Consultancy ENTITIES"],
+                                        ["INDEPENDENT", "An INDEPENDENT Professional Consultant"],
+                                        ["CONSULTANCY", "A Professional Consultancy ENTITY"],
                                     ] as const
                                 ).map(([value, label]) => (
                                     <label key={value} className="pk-choice" data-checked={values.consultantKind === value}>
@@ -203,7 +260,7 @@ export default function ProfileForm({
                                             <TextInput id={id} value={values.degrees} max={200} invalid={!!errors.degrees} onChange={(v) => set("degrees", v)} />
                                         )}
                                     </Field>
-                                    <Field label="Statutory body registration number">
+                                    <Field label="Statutory Body Registration Number">
                                         {(id) => (
                                             <TextInput id={id} value={values.registrationNumber} max={100} onChange={(v) => set("registrationNumber", v)} />
                                         )}
@@ -212,23 +269,46 @@ export default function ProfileForm({
                             )}
 
                             {isConsultant && values.consultantKind === "CONSULTANCY" && (
-                                <Field label="Name of consultant">
+                                <Field label="Name (s) of Consultant (s)">
                                     {(id) => (
                                         <TextInput id={id} value={values.consultantName} max={150} onChange={(v) => set("consultantName", v)} />
                                     )}
                                 </Field>
                             )}
 
-                            <Field label={labels.services} required error={errors.servicesOffered}>
+                            <Field
+                                label={labels.services}
+                                required
+                                error={errors.servicesOffered}
+                                hint={`Shown on your card — ${values.servicesOffered.length}/${CORE_SERVICES_MAX} characters`}
+                            >
                                 {(id) => (
                                     <textarea
                                         id={id}
                                         className="pk-textarea"
-                                        rows={3}
-                                        maxLength={500}
+                                        rows={2}
+                                        maxLength={CORE_SERVICES_MAX}
                                         value={values.servicesOffered}
                                         aria-invalid={!!errors.servicesOffered}
                                         onChange={(e) => set("servicesOffered", e.target.value)}
+                                    />
+                                )}
+                            </Field>
+
+                            <Field
+                                label={labels.servicesDetail}
+                                error={errors.servicesDetail}
+                                hint="Displayed on the profile information page only (optional)"
+                            >
+                                {(id) => (
+                                    <textarea
+                                        id={id}
+                                        className="pk-textarea"
+                                        rows={5}
+                                        maxLength={SERVICES_DETAIL_MAX}
+                                        value={values.servicesDetail}
+                                        aria-invalid={!!errors.servicesDetail}
+                                        onChange={(e) => set("servicesDetail", e.target.value)}
                                     />
                                 )}
                             </Field>
@@ -255,7 +335,7 @@ export default function ProfileForm({
                                             checked={values.isWomenEntrepreneur}
                                             onChange={(e) => set("isWomenEntrepreneur", e.target.checked)}
                                         />
-                                        Is a woman {isConsultant ? "professional" : "entrepreneur"}?
+                                        {isConsultant && values.consultantKind === "CONSULTANCY" ? "Owned by a Woman / Women" : "I am a Woman"} {isConsultant ? values.consultantKind === "CONSULTANCY" ? "" : "Consultant" : "Entrepreneur"} (check this box to add the ‘SHE-PRO’ badge on your e-visiting card)
                                     </label>
                                 </div>
                             </div>
@@ -265,10 +345,10 @@ export default function ProfileForm({
 
                 {/* Contact */}
                 <fieldset className="pk-fieldset">
-                    <legend className="pk-legend">Contact</legend>
+                    <legend className="pk-legend">Contact INFORMATION</legend>
                     <div className="pk-field">
                         <span className="pk-label">
-                            Contact number (s) <span className="pk-req">*</span>
+                            Contact Number (s) <span className="pk-req">*</span>
                         </span>
                         {values.phones.map((p, i) => (
                             <div key={i} className="pk-field">
@@ -564,7 +644,7 @@ function DayEditor({
                                 onChange(e.target.checked ? { breakStart: "13:00", breakEnd: "14:00" } : { breakStart: "", breakEnd: "" });
                             }}
                         />
-                        Lunch break
+                        Lunch Break (check this box to add your lunch break timings)
                     </label>
                     {showBreak && (
                         <div className="pk-times">

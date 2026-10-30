@@ -55,10 +55,17 @@ export interface VariantLabels {
     name: string;
     since: string;
     sinceShort: string;
+    /** Core / primary services (on the card) */
     services: string;
+    /** All services in detail (profile popup) */
+    servicesDetail: string;
     address: string;
     hours: string;
 }
+
+/** Max length of the core services line on the card (fits ~2 lines). */
+export const CORE_SERVICES_MAX = 80;
+export const SERVICES_DETAIL_MAX = 2000;
 
 export function variantLabels(type: ProfileType, kind?: string | null): VariantLabels {
     if (type === "SERVICE_AND_RETAIL_BRANDS") {
@@ -66,7 +73,8 @@ export function variantLabels(type: ProfileType, kind?: string | null): VariantL
             name: "Name of Service / Retail Brand",
             since: "Serving since / Established in",
             sinceShort: "Serving since",
-            services: "Services offered / Product line",
+            services: "Core or Primary Services Offered / Product Line",
+            servicesDetail: "All the Services Offered / Product Line in detail",
             address: "Business / Outlet address",
             hours: "Operational / Business days & hours",
         };
@@ -76,7 +84,8 @@ export function variantLabels(type: ProfileType, kind?: string | null): VariantL
         name: consultancy ? "Name of Entity" : "Name",
         since: consultancy ? "Established in" : "Practicing since",
         sinceShort: consultancy ? "Established in" : "Practicing since",
-        services: "Services offered / Areas of practice",
+        services: "Core or Primary Services Offered / Areas of Practice",
+        servicesDetail: "All the Services Offered / Areas of Practice in detail",
         address: "Office address",
         hours: "Working days & hours",
     };

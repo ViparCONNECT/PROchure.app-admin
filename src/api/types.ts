@@ -8,12 +8,36 @@ export type AdminRole = 'SUPER_ADMIN' | 'ADMIN';
 
 export type CategoryType = 'PROFESSIONAL_CONSULTANT' | 'SERVICE_AND_RETAIL_BRANDS';
 
+/** "Category Type" in the UI — groups categories within a profile type. */
+export interface CategoryGroup {
+  id: string;
+  name: string;
+  type: CategoryType;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+  _count?: { categories: number };
+}
+
+export interface CreateCategoryGroupDto {
+  name: string;
+  type: CategoryType;
+  sortOrder?: number;
+}
+
+export interface UpdateCategoryGroupDto {
+  name?: string;
+  sortOrder?: number;
+}
+
 export interface Category {
   id: string;
   /** Display name, e.g. "Product Brands" */
   name: string;
-  /** Enum identifier, e.g. "PRODUCT_BRANDS" */
+  /** Profile type */
   type: CategoryType;
+  groupId?: string | null;
+  group?: Pick<CategoryGroup, 'id' | 'name' | 'sortOrder'> | null;
   isSubCategoryNeeded: boolean;
   createdAt: string;
   updatedAt: string;
@@ -22,11 +46,13 @@ export interface Category {
 export interface CreateCategoryDto {
   name: string;
   type: CategoryType;
+  groupId: string;
   isSubCategoryNeeded?: boolean;
 }
 
 export interface UpdateCategoryDto {
   name?: string;
+  groupId?: string;
   isSubCategoryNeeded?: boolean;
 }
 
@@ -88,12 +114,16 @@ export interface ProfileOwner {
   phone: string;
 }
 
-export interface Profile extends Omit<ProfilePayload, 'profileType' | 'subCategoryId'> {
+export interface Profile extends Omit<ProfilePayload, 'profileType' | 'subCategoryId' | 'servicesDetail'> {
   id: string;
   status: ProfileStatus;
   isDisabled: boolean;
   subCategoryId?: string | null;
-  category?: Pick<Category, 'id' | 'name' | 'type' | 'isSubCategoryNeeded'>;
+  servicesDetail?: string | null;
+  /** Set once the listing fee has been paid */
+  paidAt?: string | null;
+  paymentLinkToken?: string | null;
+  category?: Pick<Category, 'id' | 'name' | 'type' | 'isSubCategoryNeeded' | 'groupId'>;
   subCategory?: Pick<SubCategory, 'id' | 'name'> | null;
   user?: ({ id: string; name: string } & ProfileOwner) | null;
   publishedAt?: string | null;
@@ -182,6 +212,13 @@ export interface AdminListParams extends PaginationParams {
 export interface CategoryListParams extends PaginationParams {
   search?: string;
   type?: string;
+  groupId?: string;
+}
+
+export interface PaymentLink {
+  url: string;
+  paid: boolean;
+  paidAt?: string | null;
 }
 
 export interface ProfileListParams extends PaginationParams {

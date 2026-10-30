@@ -27,6 +27,8 @@ import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import LinkIcon from '@mui/icons-material/Link';
+import { PaymentLinkDialog } from '@/components/profile/PaymentLinkDialog';
 import { useSnackbar } from 'notistack';
 import { useProfiles, useDeleteProfile } from '@/api/profiles';
 import { useCategories, useSubCategories } from '@/api/categories';
@@ -69,6 +71,7 @@ export function ProfilesPage() {
   const [statusFilter, setStatusFilter] = useState('');
 
   const [deleteTarget, setDeleteTarget] = useState<Profile | null>(null);
+  const [paymentLinkTarget, setPaymentLinkTarget] = useState<Profile | null>(null);
 
   const params: ProfileListParams = {
     page: page + 1,
@@ -259,6 +262,7 @@ export function ProfilesPage() {
               <TableCell>Owner login</TableCell>
               <TableCell>City</TableCell>
               <TableCell>Status</TableCell>
+              <TableCell>Fee</TableCell>
               <TableCell>Created</TableCell>
               <TableCell align="right">Actions</TableCell>
             </TableRow>
@@ -266,13 +270,13 @@ export function ProfilesPage() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={9} align="center" sx={{ py: 6 }}>
+                <TableCell colSpan={10} align="center" sx={{ py: 6 }}>
                   <CircularProgress />
                 </TableCell>
               </TableRow>
             ) : !data?.items?.length ? (
               <TableRow>
-                <TableCell colSpan={9}>
+                <TableCell colSpan={10}>
                   <EmptyState
                     message="No profiles found"
                     action={{ label: 'Create Profile', onClick: () => navigate('/profiles/new') }}
@@ -321,9 +325,30 @@ export function ProfilesPage() {
                     {statusChip(profile)}
                   </TableCell>
                   <TableCell>
+                    {profile.paidAt ? (
+                      <Tooltip title={`Paid on ${formatDateTime(profile.paidAt)}`}>
+                        <Chip label="Paid" size="small" color="success" variant="outlined" />
+                      </Tooltip>
+                    ) : (
+                      <Chip label="Unpaid" size="small" variant="outlined" />
+                    )}
+                  </TableCell>
+                  <TableCell>
                     <Typography variant="caption">{formatDateTime(profile.createdAt)}</Typography>
                   </TableCell>
-                  <TableCell align="right">
+                  <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
+                    <Tooltip title={profile.user ? 'Payment link' : 'Add an owner login first (Edit)'}>
+                      <span>
+                        <IconButton
+                          size="small"
+                          color="primary"
+                          disabled={!profile.user}
+                          onClick={() => setPaymentLinkTarget(profile)}
+                        >
+                          <LinkIcon fontSize="small" />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
                     <Tooltip title="Edit">
                       <IconButton
                         size="small"
@@ -363,6 +388,8 @@ export function ProfilesPage() {
           }}
         />
       </TableContainer>
+
+      <PaymentLinkDialog profile={paymentLinkTarget} onClose={() => setPaymentLinkTarget(null)} />
 
       <ConfirmDialog
         open={Boolean(deleteTarget)}

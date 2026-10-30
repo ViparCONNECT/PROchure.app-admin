@@ -42,7 +42,10 @@ export interface ProfilePayload {
     consultantName?: string;
     degrees?: string;
     registrationNumber?: string;
+    /** Core / primary services (max 80 chars, shown on the card) */
     servicesOffered: string;
+    /** All services in detail (profile popup only) */
+    servicesDetail?: string;
     sinceYear: string;
     isWomenEntrepreneur: boolean;
     contactNumbers: string[];
@@ -61,6 +64,7 @@ export interface ProfileCardData {
     degrees?: string | null;
     registrationNumber?: string | null;
     servicesOffered?: string | null;
+    servicesDetail?: string | null;
     sinceYear?: string | null;
     isWomenEntrepreneur?: boolean | null;
     contactNumbers?: string[] | null;
@@ -70,10 +74,17 @@ export interface ProfileCardData {
     languages?: string[] | null;
 }
 
+/** "Category Type" — a group of categories within a profile type. */
+export interface CategoryGroupOption {
+    id: string;
+    name: string;
+}
+
 export interface CategoryOption {
     id: string;
     name: string;
     isSubCategoryNeeded: boolean;
+    groupId?: string | null;
 }
 
 export interface SubCategoryOption {

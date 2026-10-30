@@ -1,5 +1,5 @@
 // profile-kit — shared by PROchure-sales and PROchure.app-admin. Keep both copies identical.
-import { ADDRESS_FIELDS, COUNTRY_CODES, MAX_CONTACTS } from "./constants";
+import { ADDRESS_FIELDS, CORE_SERVICES_MAX, COUNTRY_CODES, MAX_CONTACTS, SERVICES_DETAIL_MAX } from "./constants";
 import type {
     ConsultantKind,
     DaySchedule,
@@ -72,6 +72,8 @@ export interface PhoneInput {
 export type AddressValues = Record<(typeof ADDRESS_FIELDS)[number]["key"], string>;
 
 export interface ProfileFormValues {
+    /** Category type (group) — UI only, used to filter categories */
+    categoryGroupId: string;
     categoryId: string;
     subCategoryId: string;
     consultantKind: ConsultantKind | "";
@@ -80,6 +82,7 @@ export interface ProfileFormValues {
     degrees: string;
     registrationNumber: string;
     servicesOffered: string;
+    servicesDetail: string;
     sinceYear: string;
     isWomenEntrepreneur: boolean;
     phones: PhoneInput[];
@@ -102,6 +105,7 @@ const emptyAddress = (): AddressValues =>
 
 export function emptyFormValues(prefill: { phone?: string; email?: string } = {}): ProfileFormValues {
     return {
+        categoryGroupId: "",
         categoryId: "",
         subCategoryId: "",
         consultantKind: "",
@@ -110,6 +114,7 @@ export function emptyFormValues(prefill: { phone?: string; email?: string } = {}
         degrees: "",
         registrationNumber: "",
         servicesOffered: "",
+        servicesDetail: "",
         sinceYear: "",
         isWomenEntrepreneur: false,
         phones: [prefill.phone ? splitPhone(prefill.phone) : { code: "+91", number: "" }],
@@ -121,7 +126,13 @@ export function emptyFormValues(prefill: { phone?: string; email?: string } = {}
 }
 
 /** Converts a profile returned by the API into form values. */
-export function toFormValues(p: Omit<Partial<ProfilePayload>, "subCategoryId"> & { subCategoryId?: string | null }): ProfileFormValues {
+export function toFormValues(
+    p: Omit<Partial<ProfilePayload>, "subCategoryId" | "servicesDetail"> & {
+        subCategoryId?: string | null;
+        servicesDetail?: string | null;
+        category?: { groupId?: string | null } | null;
+    },
+): ProfileFormValues {
     const base = emptyFormValues();
     const normDay = (d?: Partial<DaySchedule> | null, fallback = day()): DaySchedule =>
         d
@@ -134,6 +145,7 @@ export function toFormValues(p: Omit<Partial<ProfilePayload>, "subCategoryId"> &
               }
             : fallback;
     return {
+        categoryGroupId: p.category?.groupId ?? "",
         categoryId: p.categoryId ?? "",
         subCategoryId: p.subCategoryId ?? "",
         consultantKind: p.consultantKind ?? "",
@@ -142,6 +154,7 @@ export function toFormValues(p: Omit<Partial<ProfilePayload>, "subCategoryId"> &
         degrees: p.degrees ?? "",
         registrationNumber: p.registrationNumber ?? "",
         servicesOffered: p.servicesOffered ?? "",
+        servicesDetail: p.servicesDetail ?? "",
         sinceYear: p.sinceYear ?? "",
         isWomenEntrepreneur: !!p.isWomenEntrepreneur,
         phones: p.contactNumbers?.length ? p.contactNumbers.map(splitPhone) : base.phones,
@@ -185,6 +198,7 @@ export function toPayload(type: ProfileType, v: ProfileFormValues): ProfilePaylo
         degrees: independent ? opt(v.degrees) : undefined,
         registrationNumber: independent ? opt(v.registrationNumber) : undefined,
         servicesOffered: t(v.servicesOffered),
+        servicesDetail: opt(v.servicesDetail),
         sinceYear: t(v.sinceYear),
         isWomenEntrepreneur: v.isWomenEntrepreneur,
         contactNumbers: v.phones.map(phoneToE164).filter(Boolean),
@@ -211,17 +225,27 @@ const E164_RE = /^\+[1-9]\d{7,14}$/;
 
 export type FormErrors = Partial<Record<string, string>>;
 
-export function validateProfile(type: ProfileType, v: ProfileFormValues, needsSubCategory: boolean): FormErrors {
+export function validateProfile(
+    type: ProfileType,
+    v: ProfileFormValues,
+    needsSubCategory: boolean,
+    needsCategoryGroup = false,
+): FormErrors {
     const e: FormErrors = {};
     const consultant = type === "PROFESSIONAL_CONSULTANT";
     const year = parseInt(v.sinceYear, 10);
 
+    if (needsCategoryGroup && !v.categoryGroupId) e.categoryGroupId = "Select a category type";
     if (!v.categoryId) e.categoryId = "Select a category";
     if (needsSubCategory && !v.subCategoryId) e.subCategoryId = "Select a subcategory";
     if (consultant && !v.consultantKind) e.consultantKind = "Choose Independent Professional or Professional Consultancy";
     if (t(v.name).length < 2) e.name = "This field is required";
     if (consultant && v.consultantKind === "INDEPENDENT" && t(v.degrees).length < 2) e.degrees = "Degrees are required";
     if (t(v.servicesOffered).length < 2) e.servicesOffered = "This field is required";
+    else if (t(v.servicesOffered).length > CORE_SERVICES_MAX) {
+        e.servicesOffered = `Keep this to ${CORE_SERVICES_MAX} characters — add the rest in the detailed field below`;
+    }
+    if (t(v.servicesDetail).length > SERVICES_DETAIL_MAX) e.servicesDetail = `Up to ${SERVICES_DETAIL_MAX} characters`;
     if (!/^(19|20)\d{2}$/.test(t(v.sinceYear)) || year > new Date().getFullYear()) e.sinceYear = "Enter a valid 4-digit year";
 
     const phones = v.phones.map(phoneToE164);

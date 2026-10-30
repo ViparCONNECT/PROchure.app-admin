@@ -11,6 +11,7 @@ import AdminCreatePage from '@/pages/admins/AdminCreatePage';
 import AdminEditPage from '@/pages/admins/AdminEditPage';
 import CategoriesPage from '@/pages/categories/CategoriesPage';
 import SubcategoriesPage from '@/pages/categories/SubcategoriesPage';
+import CategoryTypesPage from '@/pages/categories/CategoryTypesPage';
 import ProfilesPage from '@/pages/profiles/ProfilesPage';
 import ProfileCreatePage from '@/pages/profiles/ProfileCreatePage';
 import ProfileEditPage from '@/pages/profiles/ProfileEditPage';
@@ -59,6 +60,7 @@ function App() {
 
           {/* Categories */}
           <Route path="/categories" element={<CategoriesPage />} />
+          <Route path="/category-types" element={<CategoryTypesPage />} />
           <Route
             path="/categories/:categoryId/subcategories"
             element={<SubcategoriesPage />}
