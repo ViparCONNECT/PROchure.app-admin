@@ -282,7 +282,7 @@ export default function ProfileForm({
                                 label={labels.services}
                                 required
                                 error={errors.servicesOffered}
-                                hint={`Shown on your card — ${values.servicesOffered.length}/${CORE_SERVICES_MAX} characters`}
+                                hint={`Displayed on your card — ${values.servicesOffered.length}/${CORE_SERVICES_MAX} characters`}
                             >
                                 {(id) => (
                                     <textarea
@@ -300,7 +300,7 @@ export default function ProfileForm({
                             <Field
                                 label={labels.servicesDetail}
                                 error={errors.servicesDetail}
-                                hint="Displayed on the profile information page only (optional)"
+                                hint="Displayed on the profile information page only"
                             >
                                 {(id) => (
                                     <textarea

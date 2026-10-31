@@ -237,7 +237,7 @@ export function validateProfile(
 
     if (needsCategoryGroup && !v.categoryGroupId) e.categoryGroupId = "Select a category type";
     if (!v.categoryId) e.categoryId = "Select a category";
-    if (needsSubCategory && !v.subCategoryId) e.subCategoryId = "Select a subcategory";
+    if (needsSubCategory && !v.subCategoryId) e.subCategoryId = "Select a sub-category";
     if (consultant && !v.consultantKind) e.consultantKind = "Choose Independent Professional or Professional Consultancy";
     if (t(v.name).length < 2) e.name = "This field is required";
     if (consultant && v.consultantKind === "INDEPENDENT" && t(v.degrees).length < 2) e.degrees = "Degrees are required";
