@@ -232,52 +232,7 @@ export function validateProfile(
     needsCategoryGroup = false,
 ): FormErrors {
     const e: FormErrors = {};
-    const consultant = type === "PROFESSIONAL_CONSULTANT";
-    const year = parseInt(v.sinceYear, 10);
 
-    if (needsCategoryGroup && !v.categoryGroupId) e.categoryGroupId = "Select a category type";
-    if (!v.categoryId) e.categoryId = "Select a category";
-    if (needsSubCategory && !v.subCategoryId) e.subCategoryId = "Select a sub-category";
-    if (consultant && !v.consultantKind) e.consultantKind = "Choose Independent Professional or Professional Consultancy";
     if (t(v.name).length < 2) e.name = "This field is required";
-    if (consultant && v.consultantKind === "INDEPENDENT" && t(v.degrees).length < 2) e.degrees = "Degrees are required";
-    if (t(v.servicesOffered).length < 2) e.servicesOffered = "This field is required";
-    else if (t(v.servicesOffered).length > CORE_SERVICES_MAX) {
-        e.servicesOffered = `Keep this to ${CORE_SERVICES_MAX} characters — add the rest in the detailed field below`;
-    }
-    if (t(v.servicesDetail).length > SERVICES_DETAIL_MAX) e.servicesDetail = `Up to ${SERVICES_DETAIL_MAX} characters`;
-    if (!/^(19|20)\d{2}$/.test(t(v.sinceYear)) || year > new Date().getFullYear()) e.sinceYear = "Enter a valid 4-digit year";
-
-    const phones = v.phones.map(phoneToE164);
-    if (!phones.some(Boolean)) e["phones.0"] = "At least one contact number is required";
-    phones.forEach((p, i) => {
-        if (p && !E164_RE.test(p)) e[`phones.${i}`] = "Enter a valid mobile number";
-    });
-    if (v.phones.length > MAX_CONTACTS) e["phones.0"] = `Up to ${MAX_CONTACTS} numbers`;
-
-    const emails = v.emails.map(t);
-    if (!emails.some(Boolean)) e["emails.0"] = "At least one email ID is required";
-    emails.forEach((m, i) => {
-        if (m && !EMAIL_RE.test(m)) e[`emails.${i}`] = "Enter a valid email";
-    });
-
-    for (const f of ADDRESS_FIELDS) {
-        if (f.required && !t(v.address[f.key])) e[`address.${f.key}`] = "Required";
-    }
-
-    (["weekdays", "saturday", "sunday"] as const).forEach((k) => {
-        const d = v.workingHours[k];
-        if (d.closed) return;
-        if (!d.open || !d.close) e[`workingHours.${k}`] = "Enter opening and closing time";
-        else if (d.open >= d.close) e[`workingHours.${k}`] = "Closing time must be after opening time";
-        else if (d.breakStart || d.breakEnd) {
-            if (!d.breakStart || !d.breakEnd) e[`workingHours.${k}`] = "Enter both lunch break times";
-            else if (!(d.open < d.breakStart && d.breakStart < d.breakEnd && d.breakEnd < d.close)) {
-                e[`workingHours.${k}`] = "Lunch break must be within working hours";
-            }
-        }
-    });
-
-    if (!v.languages.length) e.languages = "Select at least one language";
     return e;
 }

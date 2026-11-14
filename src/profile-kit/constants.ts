@@ -44,9 +44,9 @@ export const ADDRESS_FIELDS = [
     { key: "streetLaneRoadNameSubLocality", label: "Street / Lane / Road / Sub-Locality", required: false, max: 200 },
     { key: "nearestLandmark", label: "Nearest Landmark", required: false, max: 200 },
     { key: "secondaryPrimaryLocality", label: "Secondary / Primary Locality", required: false, max: 200 },
-    { key: "cityTown", label: "City / Town", required: true, max: 100 },
-    { key: "stateProvince", label: "State / Province", required: true, max: 100 },
-    { key: "country", label: "Country", required: true, max: 100 },
+    { key: "cityTown", label: "City / Town", required: false, max: 100 },
+    { key: "stateProvince", label: "State / Province", required: false, max: 100 },
+    { key: "country", label: "Country", required: false, max: 100 },
     { key: "pinCodeZipCode", label: "PIN / ZIP Code", required: false, max: 20 },
 ] as const;
 

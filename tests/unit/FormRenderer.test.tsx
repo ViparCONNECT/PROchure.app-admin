@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { FormProvider, useForm } from 'react-hook-form';
 import { ThemeProvider } from '@mui/material/styles';
 import { FormRenderer } from '@/components/common/FormRenderer';
+import { emptyFormValues, validateProfile } from '@/profile-kit/format';
 import theme from '@/theme';
 import type { FormFieldDefinition } from '@/api/types';
 
@@ -47,9 +48,9 @@ describe('FormRenderer', () => {
         fields={[{ name: 'password', label: 'Password', type: 'password', required: true }]}
       />,
     );
-    const input = screen.getByLabelText(/password/i) as HTMLInputElement;
+    const input = screen.getByLabelText(/password/i, { selector: 'input' }) as HTMLInputElement;
     expect(input.type).toBe('password');
-    const toggle = screen.getByLabelText(/show password/i);
+    const toggle = screen.getByRole('button', { name: /show password/i });
     await user.click(toggle);
     expect(input.type).toBe('text');
   });
@@ -114,5 +115,27 @@ describe('FormRenderer', () => {
     );
     expect(screen.getByText('Address')).toBeInTheDocument();
     expect(screen.getByLabelText(/city/i)).toBeInTheDocument();
+  });
+
+  it('allows empty admin profile address, hours and preferred languages', () => {
+    const values = emptyFormValues();
+    values.categoryId = 'cat_1';
+    values.consultantKind = 'CONSULTANCY';
+    values.name = 'Dr. Asha Rao';
+    values.servicesOffered = 'Consulting';
+    values.sinceYear = '2020';
+    values.phones = [{ code: '+91', number: '9876543210' }];
+    values.emails = ['asha@example.com'];
+    values.address.cityTown = '';
+    values.address.stateProvince = '';
+    values.address.country = '';
+    values.workingHours = {
+      weekdays: { closed: false, open: '', close: '', breakStart: '', breakEnd: '' },
+      saturday: { closed: false, open: '', close: '', breakStart: '', breakEnd: '' },
+      sunday: { closed: true, open: '', close: '', breakStart: '', breakEnd: '' },
+    };
+    values.languages = [];
+
+    expect(validateProfile('PROFESSIONAL_CONSULTANT', values, false)).toEqual({});
   });
 });
