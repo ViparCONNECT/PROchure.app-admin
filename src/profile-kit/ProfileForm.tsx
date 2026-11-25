@@ -149,7 +149,7 @@ export default function ProfileForm({
                     <legend className="pk-legend">Category</legend>
                     {loadError && <div className="pk-alert">{loadError}</div>}
                     {needsGroup && (
-                        <Field label={isConsultant ? "PROFESSIONAL CONSULTANTS" : "SERVICE & RETAIL BRANDS"} required error={errors.categoryGroupId}>
+                        <Field label={isConsultant ? "PROFESSIONAL CONSULTANTS & PRACTITIONERS" : "SERVICE & RETAIL BRANDS"} required error={errors.categoryGroupId}>
                             {(id) => (
                                 <select
                                     id={id}
@@ -227,7 +227,7 @@ export default function ProfileForm({
                             <div className="pk-radio-group" role="radiogroup">
                                 {(
                                     [
-                                        ["INDEPENDENT", "An INDEPENDENT Professional Consultant"],
+                                        ["INDEPENDENT", "An INDEPENDENT Professional Consultant & Practitioner"],
                                         ["CONSULTANCY", "A Professional Consultancy ENTITY"],
                                     ] as const
                                 ).map(([value, label]) => (

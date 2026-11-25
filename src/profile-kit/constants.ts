@@ -2,12 +2,12 @@
 import type { ProfileType } from "./types";
 
 export const PROFILE_TYPE_OPTIONS: { value: ProfileType; label: string }[] = [
-    { value: "PROFESSIONAL_CONSULTANT", label: "Professional Consultants" },
+    { value: "PROFESSIONAL_CONSULTANT", label: "Professional Consultants & Practitioners" },
     { value: "SERVICE_AND_RETAIL_BRANDS", label: "Service & Retail Brands" },
 ];
 
 export const PROFILE_TYPE_LABEL: Record<ProfileType, string> = {
-    PROFESSIONAL_CONSULTANT: "Professional Consultants",
+    PROFESSIONAL_CONSULTANT: "Professional Consultants & Practitioners",
     SERVICE_AND_RETAIL_BRANDS: "Service & Retail Brands",
 };
 
