@@ -38,11 +38,9 @@ export async function deleteProfile(id: string) {
   await apiClient.delete(`/profiles/${id}`);
 }
 
-/** Shareable no-login payment link; `regenerate` invalidates the previous link. */
-export async function getPaymentLink(id: string, regenerate = false) {
-  const { data } = await apiClient.post<ApiResponse<PaymentLink>>(`/profiles/${id}/payment-link`, {}, {
-    params: regenerate ? { regenerate: true } : {},
-  });
+/** Shareable no-login payment link; stable and based on the profile code/name. */
+export async function getPaymentLink(id: string) {
+  const { data } = await apiClient.post<ApiResponse<PaymentLink>>(`/profiles/${id}/payment-link`);
   return data.data;
 }
 

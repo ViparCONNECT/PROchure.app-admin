@@ -35,27 +35,23 @@ export function PaymentLinkDialog({ profile, onClose }: Props) {
   const [link, setLink] = useState<PaymentLink | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [confirmRegenerate, setConfirmRegenerate] = useState(false);
 
-  const load = async (regenerate = false) => {
+  const load = async () => {
     if (!profile) return;
     setBusy(true);
     setError(null);
     try {
-      setLink(await getPaymentLink(profile.id, regenerate));
+      setLink(await getPaymentLink(profile.id));
       qc.invalidateQueries({ queryKey: ['profiles'] });
-      if (regenerate) enqueueSnackbar('New payment link created. The old link no longer works.', { variant: 'info' });
     } catch (err) {
       setError(parseApiError(err).message);
     } finally {
       setBusy(false);
-      setConfirmRegenerate(false);
     }
   };
 
   useEffect(() => {
     setLink(null);
-    setConfirmRegenerate(false);
     if (profile) void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile?.id]);
@@ -116,27 +112,10 @@ export function PaymentLinkDialog({ profile, onClose }: Props) {
               }}
               onFocus={(e) => e.target.select()}
             />
-            {confirmRegenerate && (
-              <Alert
-                severity="warning"
-                action={
-                  <Button color="inherit" size="small" onClick={() => void load(true)} disabled={busy}>
-                    Yes, replace
-                  </Button>
-                }
-              >
-                The current link will stop working for anyone you've already sent it to.
-              </Alert>
-            )}
           </Box>
         ) : null}
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
-        {link && !link.paid && !confirmRegenerate && (
-          <Button color="warning" onClick={() => setConfirmRegenerate(true)} disabled={busy} sx={{ mr: 'auto' }}>
-            Generate new link
-          </Button>
-        )}
         <Button onClick={onClose}>Close</Button>
         <Button variant="contained" startIcon={<ContentCopyIcon />} onClick={copy} disabled={!link}>
           Copy link
